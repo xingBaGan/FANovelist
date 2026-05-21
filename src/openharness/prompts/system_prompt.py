@@ -5,6 +5,9 @@ Assembles the system prompt from environment info and user configuration.
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from openharness.prompts.environment import EnvironmentInfo, get_environment_info
 
 
@@ -53,6 +56,19 @@ Carefully consider the reversibility and blast radius of actions. Freely take lo
  - When referencing code, include file_path:line_number for easy navigation.
  - Focus text output on: decisions needing user input, status updates at milestones, errors that change the plan.
  - If you can say it in one sentence, don't use three."""
+_SYSTEM_PROMPT_FILE_ENV = "OPENHARNESS_SYSTEM_PROMPT_FILE"
+
+
+def _load_system_prompt_override_from_file() -> str | None:
+    """Return system prompt override loaded from env-configured file, if any."""
+    raw_path = os.environ.get(_SYSTEM_PROMPT_FILE_ENV, "").strip()
+    if not raw_path:
+        return None
+    try:
+        text = Path(raw_path).expanduser().read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return text or None
 
 
 def get_base_system_prompt() -> str:
@@ -103,7 +119,8 @@ def build_system_prompt(
     if env is None:
         env = get_environment_info(cwd=cwd)
 
-    base = custom_prompt if custom_prompt is not None else _BASE_SYSTEM_PROMPT
+    file_override = _load_system_prompt_override_from_file()
+    base = custom_prompt if custom_prompt is not None else (file_override or _BASE_SYSTEM_PROMPT)
     env_section = _format_environment_section(env)
 
     return f"{base}\n\n{env_section}"

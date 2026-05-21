@@ -1,0 +1,6 @@
+# Local OpenHarness / editor
+.DS_Store
+
+# Optional: keep drafts local-only (uncomment if desired)
+# studio/**/*.draft.md
+# studio/reviews/

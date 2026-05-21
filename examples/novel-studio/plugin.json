@@ -1,0 +1,6 @@
+{
+  "name": "novel-studio",
+  "version": "0.1.0",
+  "description": "Six-agent novel writing studio with human approval gates",
+  "enabled_by_default": true
+}

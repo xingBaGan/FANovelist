@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 from xml.sax.saxutils import escape, unescape
 
@@ -181,6 +182,7 @@ _WORKER_TOOLS = [
 ]
 
 _SIMPLE_WORKER_TOOLS = ["bash", "file_read", "file_edit"]
+_COORDINATOR_PROMPT_FILE_ENV = "OPENHARNESS_COORDINATOR_SYSTEM_PROMPT_FILE"
 
 
 def is_coordinator_mode() -> bool:
@@ -251,6 +253,17 @@ def get_coordinator_user_context(
 
 def get_coordinator_system_prompt() -> str:
     """Return the system prompt injected when running in coordinator mode."""
+    prompt_file = os.environ.get(_COORDINATOR_PROMPT_FILE_ENV, "").strip()
+    if prompt_file:
+        path = Path(prompt_file).expanduser()
+        try:
+            text = path.read_text(encoding="utf-8").strip()
+            if text:
+                return text
+        except OSError:
+            # Fall back to the built-in coordinator prompt.
+            pass
+
     is_simple = os.environ.get("CLAUDE_CODE_SIMPLE", "").lower() in {"1", "true", "yes"}
 
     if is_simple:
