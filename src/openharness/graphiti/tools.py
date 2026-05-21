@@ -199,6 +199,53 @@ class PromoteCanonEntitiesTool(_GraphitiTool):
             return ToolResult(output=str(exc), is_error=True)
 
 
+class CheckCanonConflictsInput(BaseModel):
+    source_path: str = Field(description="Path to draft markdown file")
+    focus_character: str | None = Field(default=None, description="Focus character e.g. 李默")
+    group_id: str | None = None
+
+
+class CheckCanonConflictsTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "check_canon_conflicts",
+            "Pre-approve gate: detect critical canon conflicts. Returns blocked=true if must stop.",
+            CheckCanonConflictsInput,
+        )
+
+    async def execute(
+        self,
+        arguments: CheckCanonConflictsInput,
+        context: ToolExecutionContext,
+    ) -> ToolResult:
+        from pathlib import Path
+
+        from openharness.graphiti.conflicts import check_submit_conflicts
+
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        text = Path(arguments.source_path).read_text(encoding="utf-8")
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            report = await check_submit_conflicts(
+                client, text, focus_character=arguments.focus_character, group_id=gid
+            )
+            await client.close()
+            payload = {
+                "blocked": report.blocked,
+                "critical": [{"category": c.category, "message": c.message} for c in report.critical],
+                "warnings": [{"category": c.category, "message": c.message} for c in report.warnings],
+            }
+            return ToolResult(
+                output=json.dumps(payload, ensure_ascii=False, indent=2),
+                is_error=report.blocked,
+            )
+        except Exception as exc:  # noqa: BLE001
+            return ToolResult(output=str(exc), is_error=True)
+
+
 def graphiti_tools() -> list[BaseTool]:
     return [
         GraphitiGetStatusTool(),
@@ -206,4 +253,5 @@ def graphiti_tools() -> list[BaseTool]:
         ClassifyCanonSnippetTool(),
         AddCanonEpisodeTool(),
         PromoteCanonEntitiesTool(),
+        CheckCanonConflictsTool(),
     ]

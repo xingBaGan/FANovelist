@@ -127,3 +127,58 @@ def _merge_short_blocks(
     if pending_short is not None:
         out.append(pending_short)
     return out
+
+
+def _uid_comment_line(uid: str) -> str:
+    return f"<!-- paragraph_uid: {uid} -->"
+
+
+def _has_uid_comment_above(lines: list[str], uid: str) -> bool:
+    for line in reversed(lines[-5:]):
+        if _parse_uid_line(line.strip()) == uid:
+            return True
+    return False
+
+
+def inject_paragraph_uids(markdown: str, blocks: list[ParagraphBlock]) -> str:
+    """Insert uid comments before each paragraph; idempotent on re-approve."""
+    if not blocks:
+        return markdown
+    lines = markdown.splitlines()
+    out: list[str] = []
+    block_idx = 0
+    pending_uid: str | None = None
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        parsed = _parse_uid_line(stripped) if stripped else None
+        if parsed is not None:
+            pending_uid = parsed
+            out.append(line)
+            i += 1
+            continue
+        if _HEADING_RE.match(stripped):
+            pending_uid = None
+            out.append(line)
+            i += 1
+            continue
+        if stripped == "":
+            out.append(line)
+            i += 1
+            continue
+        if block_idx < len(blocks):
+            block = blocks[block_idx]
+            if not _has_uid_comment_above(out, block.paragraph_uid) and pending_uid != block.paragraph_uid:
+                if out and out[-1].strip() != "":
+                    out.append("")
+                out.append(_uid_comment_line(block.paragraph_uid))
+                out.append("")
+            pending_uid = None
+            block_idx += 1
+        out.append(line)
+        i += 1
+    result = "\n".join(out)
+    if markdown.endswith("\n"):
+        result += "\n"
+    return result

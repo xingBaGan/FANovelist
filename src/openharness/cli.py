@@ -771,6 +771,13 @@ provider_app = typer.Typer(name="provider", help="Manage provider profiles")
 cron_app = typer.Typer(name="cron", help="Manage cron scheduler and jobs")
 autopilot_app = typer.Typer(name="autopilot", help="Manage repo autopilot")
 
+try:
+    from openharness.graphiti.cli import graphiti_app
+
+    app.add_typer(graphiti_app)
+except ImportError:
+    pass
+
 app.add_typer(mcp_app)
 app.add_typer(plugin_app)
 app.add_typer(auth_app)
