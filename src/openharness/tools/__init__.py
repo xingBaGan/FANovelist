@@ -90,6 +90,13 @@ def create_default_tool_registry(mcp_manager=None) -> ToolRegistry:
         TeamDeleteTool(),
     ):
         registry.register(tool)
+    try:
+        from openharness.graphiti.tools import graphiti_tools
+
+        for tool in graphiti_tools():
+            registry.register(tool)
+    except ImportError:
+        pass
     if mcp_manager is not None:
         registry.register(ListMcpResourcesTool(mcp_manager))
         registry.register(ReadMcpResourceTool(mcp_manager))

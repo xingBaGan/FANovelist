@@ -1,5 +1,9 @@
 # Local OpenHarness / editor
 .DS_Store
+.env
+
+# Graphiti ingest index (SQLite audit + paragraph state)
+studio/.graphiti/
 
 # Optional: keep drafts local-only (uncomment if desired)
 # studio/**/*.draft.md

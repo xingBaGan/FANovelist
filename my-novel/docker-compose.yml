@@ -1,0 +1,24 @@
+# Local Neo4j for Graphiti canon memory (novel studio).
+# Start: docker compose up -d
+# Browser: http://localhost:7474  user neo4j / password from .env
+
+services:
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j-novel
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-novel-graphiti-dev}
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  neo4j_data:
