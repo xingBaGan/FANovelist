@@ -445,6 +445,9 @@ def test_cli_provider_use_activates_codex_profile(monkeypatch, tmp_path: Path):
     )
     monkeypatch.setenv("OPENHARNESS_CONFIG_DIR", str(config_dir))
     monkeypatch.setenv("CODEX_HOME", str(codex_home))
+    # Prevent env var leakage from overriding the configured base_url
+    monkeypatch.delenv("ANTHROPIC_BASE_URL", raising=False)
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
 
     runner = CliRunner()
     assert runner.invoke(app, ["auth", "codex-login"]).exit_code == 0

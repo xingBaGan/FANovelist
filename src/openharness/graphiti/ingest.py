@@ -42,7 +42,14 @@ async def ingest_submitted_document(
     db_path = studio_root / ".graphiti" / "ingest.db"
     state = store or IngestStateStore(db_path)
     client = graphiti or GraphitiClient(GraphitiSettings.from_env(group_id=group_id))
-    summarize = summarizer or passthrough_summarizer
+
+    if summarizer is not None:
+        summarize = summarizer
+    elif client.available and getattr(client._settings, "openai_api_key", None):
+        from openharness.graphiti.summarize import openai_summarizer
+        summarize = openai_summarizer
+    else:
+        summarize = passthrough_summarizer
 
     rel_path = str(source_path)
     markdown = source_path.read_text(encoding="utf-8")

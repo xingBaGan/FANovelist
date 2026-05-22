@@ -1,5 +1,7 @@
 # Graphiti schema v1 (novel studio)
 
+> **换编辑器交接：** 完整上下文见 [`../../docs/graphiti-novel-handoff.md`](../../docs/graphiti-novel-handoff.md)
+
 ## Storage
 
 | Layer | Path | Role |

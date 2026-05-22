@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -246,6 +247,214 @@ class CheckCanonConflictsTool(_GraphitiTool):
             return ToolResult(output=str(exc), is_error=True)
 
 
+def _clean_val(val: Any) -> Any:
+    if hasattr(val, "isoformat"):
+        return val.isoformat()
+    if isinstance(val, dict):
+        return {k: _clean_val(v) for k, v in val.items()}
+    if isinstance(val, list):
+        return [_clean_val(v) for v in val]
+    return val
+
+
+class SearchFactsInput(BaseModel):
+    query: str = Field(description="Semantic search query")
+    group_id: str | None = Field(default=None, description="Graph partition")
+
+
+class SearchFactsTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "search_facts",
+            "Search semantic facts inside the Graphiti knowledge graph using semantic query.",
+            SearchFactsInput,
+        )
+
+    async def execute(self, arguments: SearchFactsInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            res = await client.search_facts(arguments.query, group_id=gid)
+            cleaned = []
+            for edge in res:
+                d = edge.dict() if hasattr(edge, "dict") else edge.__dict__
+                d.pop("fact_embedding", None)
+                cleaned.append(_clean_val(d))
+            await client.close()
+            return ToolResult(output=json.dumps(cleaned, ensure_ascii=False, indent=2))
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class RemoveEpisodeInput(BaseModel):
+    episode_uuid: str = Field(description="The UUID of the episode to remove")
+
+
+class RemoveEpisodeTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "remove_episode",
+            "Remove an episode from the Graphiti knowledge graph by its UUID.",
+            RemoveEpisodeInput,
+        )
+
+    async def execute(self, arguments: RemoveEpisodeInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        try:
+            await client.connect()
+            await client.remove_episode(arguments.episode_uuid)
+            await client.close()
+            return ToolResult(
+                output=json.dumps({"success": True, "message": f"Episode {arguments.episode_uuid} removed."})
+            )
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class DeleteEntityEdgeInput(BaseModel):
+    edge_uuid: str = Field(description="The UUID of the relationship edge to delete")
+
+
+class DeleteEntityEdgeTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "delete_entity_edge",
+            "Delete a specific relationship/edge from the graph by its UUID.",
+            DeleteEntityEdgeInput,
+        )
+
+    async def execute(self, arguments: DeleteEntityEdgeInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        try:
+            await client.connect()
+            await client.delete_entity_edge(arguments.edge_uuid)
+            await client.close()
+            return ToolResult(
+                output=json.dumps({"success": True, "message": f"Edge {arguments.edge_uuid} deleted."})
+            )
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class TraceEntityOriginsInput(BaseModel):
+    entity_name: str = Field(description="Entity name to trace, e.g. 李默")
+    group_id: str | None = Field(default=None, description="Graph partition")
+
+
+class TraceEntityOriginsTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "trace_entity_origins",
+            "Find all episodic source paragraphs mentioning the given entity.",
+            TraceEntityOriginsInput,
+        )
+
+    async def execute(self, arguments: TraceEntityOriginsInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            res = await client.trace_entity_origins(arguments.entity_name, group_id=gid)
+            await client.close()
+            return ToolResult(output=json.dumps(res, ensure_ascii=False, indent=2))
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class GetStoryTimelineInput(BaseModel):
+    focus_entity: str | None = Field(default=None, description="Focus character or entity name to filter the timeline")
+    group_id: str | None = Field(default=None, description="Graph partition")
+
+
+class GetStoryTimelineTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "get_story_timeline",
+            "Get a chronological story timeline, optionally filtered by a focus entity.",
+            GetStoryTimelineInput,
+        )
+
+    async def execute(self, arguments: GetStoryTimelineInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            res = await client.get_story_timeline(focus_entity=arguments.focus_entity, group_id=gid)
+            await client.close()
+            return ToolResult(output=json.dumps(res, ensure_ascii=False, indent=2))
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class GetFactionsOutlineInput(BaseModel):
+    group_id: str | None = Field(default=None, description="Graph partition")
+
+
+class GetFactionsOutlineTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "get_factions_outline",
+            "Get an outline of factions/communities and their member entities.",
+            GetFactionsOutlineInput,
+        )
+
+    async def execute(self, arguments: GetFactionsOutlineInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            res = await client.get_factions_outline(group_id=gid)
+            await client.close()
+            return ToolResult(output=json.dumps(res, ensure_ascii=False, indent=2))
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
+class GetCanonStateInput(BaseModel):
+    target_time: str = Field(description="Target ISO-8601 time string, e.g. '2020-12-01T00:00:00Z'")
+    focus_entity: str | None = Field(default=None, description="Focus character or entity name to filter active relationships")
+    group_id: str | None = Field(default=None, description="Graph partition")
+
+
+class GetCanonStateTool(_GraphitiTool):
+    def __init__(self) -> None:
+        super().__init__(
+            "get_canon_state",
+            "Get active semantic relationships (canon state) at a specific point in time.",
+            GetCanonStateInput,
+        )
+
+    async def execute(self, arguments: GetCanonStateInput, context: ToolExecutionContext) -> ToolResult:
+        client = self._client(context)
+        if not client.available:
+            return ToolResult(output="Graphiti not configured.", is_error=True)
+        gid = arguments.group_id or client._settings.group_id
+        try:
+            await client.connect()
+            res = await client.get_historical_relationships(
+                target_time=arguments.target_time,
+                focus_entity=arguments.focus_entity,
+                group_id=gid,
+            )
+            await client.close()
+            return ToolResult(output=json.dumps(res, ensure_ascii=False, indent=2))
+        except Exception as exc:
+            return ToolResult(output=str(exc), is_error=True)
+
+
 def graphiti_tools() -> list[BaseTool]:
     return [
         GraphitiGetStatusTool(),
@@ -254,4 +463,11 @@ def graphiti_tools() -> list[BaseTool]:
         AddCanonEpisodeTool(),
         PromoteCanonEntitiesTool(),
         CheckCanonConflictsTool(),
+        SearchFactsTool(),
+        RemoveEpisodeTool(),
+        DeleteEntityEdgeTool(),
+        TraceEntityOriginsTool(),
+        GetStoryTimelineTool(),
+        GetFactionsOutlineTool(),
+        GetCanonStateTool(),
     ]

@@ -2305,10 +2305,6 @@ def main(
     ),
 ) -> None:
     """Start an interactive session or run a single prompt."""
-    if ctx.invoked_subcommand is not None:
-        return
-
-    import asyncio
     import logging
 
     if debug:
@@ -2321,6 +2317,12 @@ def main(
     elif os.environ.get("OPENHARNESS_LOG_LEVEL"):
         lvl = getattr(logging, os.environ["OPENHARNESS_LOG_LEVEL"].upper(), logging.WARNING)
         logging.basicConfig(level=lvl, format="%(asctime)s [%(name)s] %(levelname)s %(message)s", stream=sys.stderr)
+
+    if ctx.invoked_subcommand is not None:
+        return
+
+    import asyncio
+
 
     if dangerously_skip_permissions:
         permission_mode = "full_auto"

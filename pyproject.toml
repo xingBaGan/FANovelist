@@ -78,6 +78,9 @@ exclude = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: run integration tests against a live Neo4j instance",
+]
 
 [tool.ruff]
 line-length = 100

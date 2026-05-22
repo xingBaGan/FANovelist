@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -62,7 +63,7 @@ def graphiti_ingest(
 @graphiti_app.command("check-conflicts")
 def graphiti_check_conflicts(
     source: Path = typer.Option(..., "--source", help="Draft or final markdown to check"),
-    focus: str | typer.Option(None, "--focus", help="Focus character, e.g. 李默"),
+    focus: str | None = typer.Option(None, "--focus", help="Focus character, e.g. 李默"),
     group_id: str | None = typer.Option(None, "--group-id"),
 ) -> None:
     """Pre-approve conflict gate. Exit code 1 if critical conflicts found."""
@@ -93,3 +94,84 @@ def graphiti_check_conflicts(
     typer.echo(json.dumps(payload, ensure_ascii=False, indent=2))
     if payload.get("blocked"):
         raise typer.Exit(code=1)
+
+
+@graphiti_app.command("trace-origins")
+def graphiti_trace_origins(
+    entity: str = typer.Option(..., "--entity", help="Entity name to trace, e.g. 李默"),
+    group_id: str | None = typer.Option(None, "--group-id"),
+) -> None:
+    """Find all episodic source paragraphs mentioning the given entity."""
+    from openharness.graphiti.client import GraphitiClient
+    from openharness.graphiti.config import GraphitiSettings
+
+    gid = group_id or GraphitiSettings.from_env().group_id
+
+    async def _run() -> list[dict[str, Any]]:
+        client = GraphitiClient(GraphitiSettings.from_env(group_id=gid))
+        res = await client.trace_entity_origins(entity, group_id=gid)
+        await client.close()
+        return res
+
+    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+
+
+@graphiti_app.command("story-timeline")
+def graphiti_story_timeline(
+    focus: str | None = typer.Option(None, "--focus", help="Focus character or entity name"),
+    group_id: str | None = typer.Option(None, "--group-id"),
+) -> None:
+    """Get a chronological story timeline, optionally filtered by a focus entity."""
+    from openharness.graphiti.client import GraphitiClient
+    from openharness.graphiti.config import GraphitiSettings
+
+    gid = group_id or GraphitiSettings.from_env().group_id
+
+    async def _run() -> list[dict[str, Any]]:
+        client = GraphitiClient(GraphitiSettings.from_env(group_id=gid))
+        res = await client.get_story_timeline(focus_entity=focus, group_id=gid)
+        await client.close()
+        return res
+
+    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+
+
+@graphiti_app.command("factions-outline")
+def graphiti_factions_outline(
+    group_id: str | None = typer.Option(None, "--group-id"),
+) -> None:
+    """Get an outline of factions/communities and their member entities."""
+    from openharness.graphiti.client import GraphitiClient
+    from openharness.graphiti.config import GraphitiSettings
+
+    gid = group_id or GraphitiSettings.from_env().group_id
+
+    async def _run() -> list[dict[str, Any]]:
+        client = GraphitiClient(GraphitiSettings.from_env(group_id=gid))
+        res = await client.get_factions_outline(group_id=gid)
+        await client.close()
+        return res
+
+    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+
+
+@graphiti_app.command("historical-relationships")
+def graphiti_historical_relationships(
+    time: str = typer.Option(..., "--time", help="Target ISO-8601 time string, e.g. '2020-12-01T00:00:00Z'"),
+    focus: str | None = typer.Option(None, "--focus", help="Focus character or entity name"),
+    group_id: str | None = typer.Option(None, "--group-id"),
+) -> None:
+    """Get active semantic relationships at a specific point in time."""
+    from openharness.graphiti.client import GraphitiClient
+    from openharness.graphiti.config import GraphitiSettings
+
+    gid = group_id or GraphitiSettings.from_env().group_id
+
+    async def _run() -> list[dict[str, Any]]:
+        client = GraphitiClient(GraphitiSettings.from_env(group_id=gid))
+        res = await client.get_historical_relationships(time, focus_entity=focus, group_id=gid)
+        await client.close()
+        return res
+
+    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+
