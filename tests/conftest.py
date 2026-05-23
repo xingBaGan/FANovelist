@@ -1,6 +1,7 @@
 """Shared test fixtures."""
 
-from __future__ import annotations
+import os
+os.environ.setdefault("SEMAPHORE_LIMIT", "2")
 
 import pytest_asyncio
 

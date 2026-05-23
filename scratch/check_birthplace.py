@@ -54,7 +54,8 @@ async def main():
         params={"group_id": TEST_GROUP_ID}
     )
     for r in edges_res.records:
-        print(f"Edge: {r['src']} -[{r['rel_type']}:{r['r_name']}]-> {r['tgt']} | Props: {r['props']}")
+        clean_props = {k: v for k, v in r['props'].items() if k != 'fact_embedding'}
+        print(f"Edge: {r['src']} -[{r['rel_type']}:{r['r_name']}]-> {r['tgt']} | Props: {clean_props}")
 
     print("Running check_submit_conflicts...")
     from openharness.graphiti.conflicts import check_submit_conflicts

@@ -63,7 +63,9 @@ class GraphitiClient:
         await self._graphiti.build_indices_and_constraints()
 
     async def close(self) -> None:
-        self._graphiti = None
+        if self._graphiti is not None:
+            await self._graphiti.close()
+            self._graphiti = None
 
     async def get_status(self) -> GraphitiStatus:
         if not self.available:

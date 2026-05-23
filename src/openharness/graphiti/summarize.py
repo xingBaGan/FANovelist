@@ -24,29 +24,28 @@ async def openai_summarizer(text: str) -> str:
         raise ValueError("OPENAI_API_KEY environment variable is not set")
 
     model = os.environ.get("OPENAI_MODEL", "gpt-4o")
-    client = AsyncOpenAI(api_key=api_key)
-
-    system_prompt = (
-        "You are a professional novel editor.\n"
-        "Summarize the following paragraph of a novel concisely, focusing on characters, actions, events, settings, and key plot developments.\n"
-        "CRITICAL: The summary MUST be in the exact same language as the input text. If the input is in English, summarize in English. If the input is in Chinese, summarize in Chinese. Do NOT translate the text.\n"
-        "Output ONLY the summary itself, without any introductory or concluding text, prefix, or markdown formatting."
-    )
-
-    logger.debug("Summarizing paragraph of length %d using model %s...", len(text), model)
-
-    try:
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text},
-            ],
-            temperature=0.3,
+    async with AsyncOpenAI(api_key=api_key) as client:
+        system_prompt = (
+            "You are a professional novel editor.\n"
+            "Summarize the following paragraph of a novel concisely, focusing on characters, actions, events, settings, and key plot developments.\n"
+            "CRITICAL: The summary MUST be in the exact same language as the input text. If the input is in English, summarize in English. If the input is in Chinese, summarize in Chinese. Do NOT translate the text.\n"
+            "Output ONLY the summary itself, without any introductory or concluding text, prefix, or markdown formatting."
         )
-    except Exception as exc:
-        logger.exception("Failed to summarize paragraph via OpenAI API: %s", exc)
-        raise
+
+        logger.debug("Summarizing paragraph of length %d using model %s...", len(text), model)
+
+        try:
+            response = await client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text},
+                ],
+                temperature=0.3,
+            )
+        except Exception as exc:
+            logger.exception("Failed to summarize paragraph via OpenAI API: %s", exc)
+            raise
 
     summary = response.choices[0].message.content
     if summary is None:
