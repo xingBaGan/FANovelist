@@ -46,6 +46,7 @@ dev = [
 ]
 graphiti = [
     "graphiti-core>=0.29.1",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.scripts]
