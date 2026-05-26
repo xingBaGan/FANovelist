@@ -134,7 +134,7 @@ class LocalRerankerClient(CrossEncoderClient):
 # Helper: build Graphiti instance
 # ---------------------------------------------------------------------------
 def make_graphiti() -> Graphiti:
-    xiaomi_key = os.environ["XIAOMI_API_KEY"]
+    deepseek_key = os.environ["DEEPSEEK_API_KEY"]
     sf_key = os.environ["SILICONFLOW_API_KEY"]
     neo4j_uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
     neo4j_user = os.environ.get("NEO4J_USER", "neo4j")
@@ -142,9 +142,9 @@ def make_graphiti() -> Graphiti:
 
     llm = DeepSeekLLMClient(
         config=LLMConfig(
-            api_key=xiaomi_key,
-            model="mimo-v2-pro",
-            base_url="https://api.xiaomimimo.com/v1",
+            api_key=deepseek_key,
+            model="deepseek-v4-flash",
+            base_url="https://api.deepseek.com",
         ),
         max_tokens=4096,
     )
@@ -615,7 +615,7 @@ async def test_9(g: Graphiti) -> bool:
 async def main() -> None:
     print("=" * 60)
     print("  Graphiti Extraction Test Suite")
-    print("  LLM: Xiaomi MiMo (mimo-v2)")
+    print("  LLM: DeepSeek (deepseek-v4-flash)")
     print("  Embedder: SiliconFlow BAAI/bge-m3")
     print("=" * 60)
 

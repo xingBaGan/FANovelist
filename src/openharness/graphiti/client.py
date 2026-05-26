@@ -14,6 +14,7 @@ from openharness.graphiti.ontology import (
     NOVEL_EXTRACTION_INSTRUCTIONS,
 )
 from openharness.graphiti.prompts_patch import apply_novel_language_prompt_patches
+from openharness.graphiti.save_patch import apply_graphiti_save_patches
 
 try:
     from graphiti_core import Graphiti
@@ -59,6 +60,7 @@ class GraphitiClient:
             database=self._settings.neo4j_database,
         )
         apply_novel_language_prompt_patches()
+        apply_graphiti_save_patches()
         self._graphiti = Graphiti(graph_driver=driver)
         await self._graphiti.build_indices_and_constraints()
 
