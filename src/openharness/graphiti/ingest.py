@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -89,6 +91,28 @@ async def ingest_submitted_document(
     report.submit_run_id = run_id
     state.upsert_document(rel_path, source_kind, group_id)
 
+    # Extract chapter index and title for SQLite chapter tracking
+    import re
+    match = re.search(r"(?:ch|chapter|chap)_*(?:\w*_)*(\d+)", source_path.name, re.IGNORECASE)
+    if match:
+        chapter_index = int(match.group(1))
+    else:
+        digits = re.findall(r"\d+", source_path.name)
+        chapter_index = int(digits[-1]) if digits else 0
+    title = None
+    for line in markdown.splitlines():
+        if line.startswith("# "):
+            title = line[2:].strip()
+            break
+    if not title:
+        title = source_path.stem
+    state.upsert_chapter(
+        chapter_path=rel_path,
+        title=title,
+        chapter_index=chapter_index,
+        approval_status="submitted",
+    )
+
     if submit_scope == "chapter_all":
         to_process = list(new_blocks)
     else:
@@ -99,35 +123,57 @@ async def ingest_submitted_document(
             or any(b.paragraph_uid == e[0].paragraph_uid for e in recon.edited)
         ]
 
-    total_to_process = len([new for new, old in recon.edited if new.paragraph_uid in {p.paragraph_uid for p in to_process}]) + \
-                       len([new for new in recon.added if new.paragraph_uid in {p.paragraph_uid for p in to_process}])
-    processed_count = 0
+    # Concurrently process deletes, edits, and additions
+    sem = asyncio.Semaphore(5)
 
-    for old in recon.deleted:
-        await _supersede_paragraph(state, client, old.paragraph_uid, run_id)
-        report.paragraphs_superseded += 1
+    # Process all deletions concurrently first
+    deleted_tasks = [
+        _supersede_paragraph(state, client, old.paragraph_uid, run_id)
+        for old in recon.deleted
+    ]
+    if deleted_tasks:
+        await asyncio.gather(*deleted_tasks)
+    report.paragraphs_superseded += len(recon.deleted)
 
-    for new, old in recon.edited:
-        if new.paragraph_uid not in {p.paragraph_uid for p in to_process}:
-            continue
-        await _supersede_paragraph(state, client, old.paragraph_uid, run_id)
-        report.paragraphs_superseded += 1
-        processed_count += 1
-        print(f"[Ingest] Ingesting edited paragraph {processed_count}/{total_to_process} ({new.paragraph_uid})...", flush=True)
-        if await _ingest_one(
-            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "edited", summaries_map
-        ):
-            report.paragraphs_ingested += 1
+    edited_to_process = [
+        (new, old) for new, old in recon.edited
+        if new.paragraph_uid in {p.paragraph_uid for p in to_process}
+    ]
+    added_to_process = [
+        new for new in recon.added
+        if new.paragraph_uid in {p.paragraph_uid for p in to_process}
+    ]
+    total_to_process = len(edited_to_process) + len(added_to_process)
 
-    for new in recon.added:
-        if new.paragraph_uid not in {p.paragraph_uid for p in to_process}:
-            continue
-        processed_count += 1
-        print(f"[Ingest] Ingesting added paragraph {processed_count}/{total_to_process} ({new.paragraph_uid})...", flush=True)
-        if await _ingest_one(
-            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "added", summaries_map
-        ):
-            report.paragraphs_ingested += 1
+    async def process_edited(new, old, idx):
+        async with sem:
+            await _supersede_paragraph(state, client, old.paragraph_uid, run_id)
+            report.paragraphs_superseded += 1
+            print(f"[Ingest] Ingesting edited paragraph {idx}/{total_to_process} ({new.paragraph_uid})...", flush=True)
+            if await _ingest_one(
+                state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "edited", summaries_map
+            ):
+                report.paragraphs_ingested += 1
+
+    async def process_added(new, idx):
+        async with sem:
+            print(f"[Ingest] Ingesting added paragraph {idx}/{total_to_process} ({new.paragraph_uid})...", flush=True)
+            if await _ingest_one(
+                state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "added", summaries_map
+            ):
+                report.paragraphs_ingested += 1
+
+    tasks = []
+    idx = 1
+    for new, old in edited_to_process:
+        tasks.append(process_edited(new, old, idx))
+        idx += 1
+    for new in added_to_process:
+        tasks.append(process_added(new, idx))
+        idx += 1
+
+    if tasks:
+        await asyncio.gather(*tasks)
 
     for skipped in recon.skipped:
         state.log_paragraph_event(
@@ -213,10 +259,25 @@ async def _ingest_one(
     action: str,
     summaries_map: dict[str, str] | None = None,
 ) -> bool:
+    # 1. Run summarization and value shift extraction concurrently to optimize performance
     if summaries_map is not None and block.paragraph_uid in summaries_map:
-        summary = summaries_map[block.paragraph_uid]
+        async def get_summary():
+            return summaries_map[block.paragraph_uid]
+        summary_task = get_summary()
     else:
-        summary = await summarize(block.text)
+        summary_task = summarize(block.text)
+
+    summary, _ = await asyncio.gather(
+        summary_task,
+        _extract_and_save_value_shifts(
+            store=store,
+            client_available=client.available,
+            chapter_path=source_path,
+            paragraph_uid=block.paragraph_uid,
+            paragraph_text=block.text,
+        )
+    )
+
     episode_uuid = ""
     edge_uuids: list[str] = []
     if client.available:
@@ -251,16 +312,27 @@ async def _ingest_one(
             )
             return False
 
-    store.save_paragraph_links(
-        paragraph_uid=block.paragraph_uid,
-        source_path=source_path,
-        paragraph_index=block.paragraph_index,
-        section_heading=block.section_heading,
-        content_hash=block.content_hash,
-        paragraph_text=block.text,
-        episode_uuids=[episode_uuid] if episode_uuid else [],
-        edge_uuids=edge_uuids,
-    )
+    # 2. SQLite persistence with transaction rollback safety (prevents SQLite/Neo4j state fork)
+    try:
+        store.save_paragraph_links(
+            paragraph_uid=block.paragraph_uid,
+            source_path=source_path,
+            paragraph_index=block.paragraph_index,
+            section_heading=block.section_heading,
+            content_hash=block.content_hash,
+            paragraph_text=block.text,
+            episode_uuids=[episode_uuid] if episode_uuid else [],
+            edge_uuids=edge_uuids,
+        )
+    except Exception as exc:
+        if episode_uuid and client.available:
+            try:
+                print(f"[Ingest] SQLite link persistence failed for {block.paragraph_uid}. Rolling back Neo4j episode {episode_uuid}...", flush=True)
+                await client.remove_episode(episode_uuid)
+            except Exception:
+                pass
+        raise exc
+
     store.log_paragraph_event(
         submit_run_id=run_id,
         paragraph_uid=block.paragraph_uid,
@@ -270,3 +342,85 @@ async def _ingest_one(
         llm_summary_excerpt=summary[:200],
     )
     return True
+
+
+async def _extract_and_save_value_shifts(
+    store: IngestStateStore,
+    client_available: bool,
+    chapter_path: str,
+    paragraph_uid: str,
+    paragraph_text: str,
+) -> None:
+    if not client_available:
+        return
+
+    import os
+    api_key = (
+        os.environ.get("XIAOMI_API_KEY") or
+        os.environ.get("DEEPSEEK_API_KEY") or
+        os.environ.get("OPENAI_API_KEY")
+    )
+    if not api_key:
+        return
+
+    base_url = None
+    model = "mimo-v2-pro"
+    if os.environ.get("XIAOMI_API_KEY"):
+        base_url = "https://api.xiaomimimo.com/v1"
+        model = os.environ.get("XIAOMI_MODEL", "mimo-v2-pro")
+    elif os.environ.get("DEEPSEEK_API_KEY"):
+        base_url = "https://api.deepseek.com"
+        model = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+    elif os.environ.get("OPENAI_API_KEY"):
+        model = os.environ.get("OPENAI_MODEL", "gpt-4o")
+
+    from openai import AsyncOpenAI
+    import json
+
+    client_kwargs = {"api_key": api_key}
+    if base_url:
+        client_kwargs["base_url"] = base_url
+
+    system_prompt = (
+        "You are a professional novel editor.\n"
+        "Analyze the following paragraph and identify if there is any 'scene value shift' (场景价值转移).\n"
+        "A scene value shift occurs when a value dimension of a character or situation changes (e.g. safety -> danger, power -> weakness, trust -> suspicion).\n"
+        "Format your output as a JSON object with the following fields:\n"
+        "- conflict_focus: A brief description of the dramatic conflict in this paragraph (str or null).\n"
+        "- value_dimension: The value dimension that shifted, e.g. 'Safety', 'Power', 'Trust', 'Life/Death' (str or null).\n"
+        "- initial_value: The starting value of this dimension on a scale of -10 to 10 (int or null).\n"
+        "- target_value: The ending value of this dimension on a scale of -10 to 10 (int or null).\n"
+        "Return ONLY valid JSON, no markdown formatting, no explanation."
+    )
+
+    try:
+        async with AsyncOpenAI(**client_kwargs) as openai_client:
+            response = await openai_client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": paragraph_text},
+                ],
+                temperature=0.1,
+                response_format={"type": "json_object"} if "gpt-4" in model or "mimo" in model or "deepseek" in model else None,
+            )
+            content = response.choices[0].message.content
+            if content:
+                data = json.loads(content)
+                conflict_focus = data.get("conflict_focus")
+                value_dim = data.get("value_dimension")
+                init_val = data.get("initial_value")
+                targ_val = data.get("target_value")
+                if conflict_focus or value_dim:
+                    store.save_scene_value_shift(
+                        chapter_path=chapter_path,
+                        paragraph_uid=paragraph_uid,
+                        conflict_focus=conflict_focus or "",
+                        value_dimension=value_dim or "",
+                        initial_value=int(init_val) if init_val is not None else 0,
+                        target_value=int(targ_val) if targ_val is not None else 0,
+                    )
+    except Exception as exc:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug("Failed to extract scene value shift: %s", exc)
