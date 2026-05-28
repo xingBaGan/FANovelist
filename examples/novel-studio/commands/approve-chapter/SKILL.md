@@ -29,7 +29,16 @@ uv run openharness graphiti check-conflicts \
 Or use tool `check_canon_conflicts` with the draft path. **Do not copy or ingest while `blocked: true`.**
 
 4. Copy `studio/chapters/chNN.draft.md` → `studio/chapters/chNN.md`.
-5. Ingest canon graph (from novel project root, with `my-novel/.env` loaded):
+5. Stage the paragraph summaries for human review:
+
+```bash
+set -a && source .env && set +a
+uv run openharness graphiti stage-summary \
+  --studio-root studio \
+  --source studio/chapters/chNN.md
+```
+
+6. Ask the human to review the generated summary buffer file at `studio/chapters/chNN.summary.md`. Once the human approves, ingest the approved summaries into the canon graph:
 
 ```bash
 set -a && source .env && set +a
@@ -38,9 +47,10 @@ uv run openharness graphiti ingest \
   --source studio/chapters/chNN.md \
   --gate approve-chapter \
   --kind chapter \
-  --group-id "${GRAPHITI_GROUP_ID:-my-novel}"
+  --group-id "${GRAPHITI_GROUP_ID:-my-novel}" \
+  --approved
 ```
 
-6. Append approval note to `studio/reviews/chNN.json` field `human_approved_at` (ISO timestamp) if editing JSON is allowed; else write `studio/.approved-chNN` marker file.
+7. Append approval note to `studio/reviews/chNN.json` field `human_approved_at` (ISO timestamp) if editing JSON is allowed; else write `studio/.approved-chNN` marker file.
 
 Confirm final path and ingest JSON (`paragraphs_ingested`, `entities_promoted`) to the human.

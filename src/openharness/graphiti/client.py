@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -23,6 +24,17 @@ try:
     from graphiti_core.graphiti import AddEpisodeResults
     from graphiti_core.nodes import EpisodeType
 
+    # Extra imports for custom models
+    import json
+    import re
+    import typing
+    from pydantic import BaseModel
+    from graphiti_core.cross_encoder.client import CrossEncoderClient
+    from graphiti_core.embedder.openai import OpenAIEmbedder, OpenAIEmbedderConfig
+    from graphiti_core.llm_client.config import LLMConfig, ModelSize
+    from graphiti_core.llm_client.openai_generic_client import OpenAIGenericClient
+    from graphiti_core.prompts.models import Message
+
     _GRAPHITI_AVAILABLE = True
 except ImportError:
     Graphiti = None  # type: ignore[misc, assignment]
@@ -31,6 +43,72 @@ except ImportError:
     AddEpisodeResults = None  # type: ignore[misc, assignment]
     EpisodeType = None  # type: ignore[misc, assignment]
     _GRAPHITI_AVAILABLE = False
+
+
+if _GRAPHITI_AVAILABLE:
+    class DeepSeekLLMClient(OpenAIGenericClient):
+        """DeepSeek workaround for json_schema format."""
+
+        async def _generate_response(
+            self,
+            messages: list[Message],
+            response_model: type[BaseModel] | None = None,
+            max_tokens: int = 4096,
+            model_size: ModelSize = ModelSize.medium,
+        ) -> dict[str, typing.Any]:
+            import openai
+
+            openai_messages: list[dict] = []
+            for m in messages:
+                content = self._clean_input(m.content)
+                if response_model is not None and m.role == "system":
+                    schema_str = json.dumps(
+                        response_model.model_json_schema(), ensure_ascii=False, indent=2
+                    )
+                    content = (
+                        content
+                        + "\n\nRespond with valid JSON that matches this schema:\n"
+                        + schema_str
+                    )
+                if m.role == "user":
+                    openai_messages.append({"role": "user", "content": content})
+                elif m.role == "system":
+                    openai_messages.append({"role": "system", "content": content})
+
+            try:
+                response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=openai_messages,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    response_format={"type": "json_object"},
+                )
+                result = response.choices[0].message.content or "{}"
+                return json.loads(result)
+            except Exception:
+                raise
+
+    class LocalRerankerClient(CrossEncoderClient):
+        """Lightweight lexical reranker."""
+
+        @staticmethod
+        def _score(query: str, passage: str) -> float:
+            query_terms = {
+                term
+                for term in re.findall(r"[\u4e00-\u9fff]{2,}|[A-Za-z0-9_/-]+", query)
+                if term
+            }
+            if not query_terms:
+                query_terms = {ch for ch in query if not ch.isspace()}
+            if not passage:
+                return 0.0
+            hits = sum(1 for term in query_terms if term in passage)
+            return float(hits)
+
+        async def rank(self, query: str, passages: list[str]) -> list[tuple[str, float]]:
+            ranked = [(passage, self._score(query, passage)) for passage in passages]
+            ranked.sort(key=lambda item: item[1], reverse=True)
+            return ranked
 
 
 @dataclass(frozen=True)
@@ -61,7 +139,48 @@ class GraphitiClient:
         )
         apply_novel_language_prompt_patches()
         apply_graphiti_save_patches()
-        self._graphiti = Graphiti(graph_driver=driver)
+
+        llm_client = None
+        embedder = None
+        cross_encoder = None
+
+        if self._settings.xiaomi_api_key:
+            llm_client = DeepSeekLLMClient(
+                config=LLMConfig(
+                    api_key=self._settings.xiaomi_api_key,
+                    model=os.environ.get("XIAOMI_MODEL", "mimo-v2-pro"),
+                    base_url="https://api.xiaomimimo.com/v1",
+                ),
+                max_tokens=4096,
+            )
+            cross_encoder = LocalRerankerClient()
+        elif self._settings.deepseek_api_key:
+            llm_client = DeepSeekLLMClient(
+                config=LLMConfig(
+                    api_key=self._settings.deepseek_api_key,
+                    model=os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash"),
+                    base_url="https://api.deepseek.com",
+                ),
+                max_tokens=4096,
+            )
+            cross_encoder = LocalRerankerClient()
+
+        if self._settings.siliconflow_api_key:
+            embedder = OpenAIEmbedder(
+                config=OpenAIEmbedderConfig(
+                    api_key=self._settings.siliconflow_api_key,
+                    base_url="https://api.siliconflow.cn/v1",
+                    embedding_model="BAAI/bge-m3",
+                    embedding_dim=1024,
+                )
+            )
+
+        self._graphiti = Graphiti(
+            graph_driver=driver,
+            llm_client=llm_client,
+            embedder=embedder,
+            cross_encoder=cross_encoder,
+        )
         await self._graphiti.build_indices_and_constraints()
 
     async def close(self) -> None:
@@ -122,6 +241,51 @@ class GraphitiClient:
         episode_uuid = result.episode.uuid
         edge_uuids = [edge.uuid for edge in result.edges]
         return episode_uuid, edge_uuids
+
+    async def get_episode_by_name(
+        self,
+        name: str,
+        group_id: str | None = None,
+    ) -> tuple[str | None, list[str], str | None]:
+        """Query Neo4j for an existing episodic node by name.
+
+        Returns (episode_uuid, edge_uuids, content) or (None, [], None) if not found.
+        If duplicates exist, deletes all of them (self-healing duplicate cleanup) and returns (None, [], None).
+        """
+        if not self.available:
+            return None, [], None
+        await self._ensure_connected()
+        gid = group_id or self._settings.group_id
+
+        query = (
+            "MATCH (e:Episodic) "
+            "WHERE e.name = $name AND e.group_id = $group_id "
+            "RETURN e.uuid AS episode_uuid, e.entity_edges AS edge_uuids, e.content AS content"
+        )
+
+        result = await self._graphiti.driver.execute_query(
+            query,
+            params={"name": name, "group_id": gid}
+        )
+
+        if not result.records:
+            return None, [], None
+
+        if len(result.records) > 1:
+            for record in result.records:
+                uuid_to_del = record.get("episode_uuid")
+                if uuid_to_del:
+                    try:
+                        await self.remove_episode(uuid_to_del)
+                    except Exception:  # noqa: BLE001
+                        pass
+            return None, [], None
+
+        record = result.records[0]
+        episode_uuid = record.get("episode_uuid")
+        edge_uuids = record.get("edge_uuids") or []
+        content = record.get("content")
+        return episode_uuid, edge_uuids, content
 
     async def remove_episode(self, episode_uuid: str) -> None:
         await self._ensure_connected()

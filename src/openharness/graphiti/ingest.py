@@ -36,6 +36,7 @@ async def ingest_submitted_document(
     store: IngestStateStore | None = None,
     summarizer: Summarizer | None = None,
     write_uids_to_markdown: bool = True,
+    summaries_map: dict[str, str] | None = None,
 ) -> IngestReport:
     """Ingest submitted markdown after reconcile and optional supersede."""
     report = IngestReport()
@@ -57,6 +58,28 @@ async def ingest_submitted_document(
     old_blocks = state.list_paragraphs(rel_path)
     recon = reconcile_paragraphs(old_blocks, new_blocks)
 
+    if client.available:
+        from openharness.graphiti.reconcile import ReconcileResult
+
+        skipped_list = list(recon.skipped)
+        added_list = list(recon.added)
+        edited_list = list(recon.edited)
+        old_map = {p.paragraph_uid: p for p in old_blocks}
+        new_skipped = []
+        for block in skipped_list:
+            old_stored = old_map.get(block.paragraph_uid)
+            if old_stored and not old_stored.episode_uuids:
+                edited_list.append((block, old_stored))
+            else:
+                new_skipped.append(block)
+        recon = ReconcileResult(
+            edited=tuple(edited_list),
+            added=recon.added,
+            deleted=recon.deleted,
+            skipped=tuple(new_skipped),
+            ambiguous=recon.ambiguous,
+        )
+
     run_id = state.start_submit_run(
         submit_gate=submit_gate,
         source_path=rel_path,
@@ -76,6 +99,10 @@ async def ingest_submitted_document(
             or any(b.paragraph_uid == e[0].paragraph_uid for e in recon.edited)
         ]
 
+    total_to_process = len([new for new, old in recon.edited if new.paragraph_uid in {p.paragraph_uid for p in to_process}]) + \
+                       len([new for new in recon.added if new.paragraph_uid in {p.paragraph_uid for p in to_process}])
+    processed_count = 0
+
     for old in recon.deleted:
         await _supersede_paragraph(state, client, old.paragraph_uid, run_id)
         report.paragraphs_superseded += 1
@@ -85,16 +112,20 @@ async def ingest_submitted_document(
             continue
         await _supersede_paragraph(state, client, old.paragraph_uid, run_id)
         report.paragraphs_superseded += 1
+        processed_count += 1
+        print(f"[Ingest] Ingesting edited paragraph {processed_count}/{total_to_process} ({new.paragraph_uid})...", flush=True)
         if await _ingest_one(
-            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "edited"
+            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "edited", summaries_map
         ):
             report.paragraphs_ingested += 1
 
     for new in recon.added:
         if new.paragraph_uid not in {p.paragraph_uid for p in to_process}:
             continue
+        processed_count += 1
+        print(f"[Ingest] Ingesting added paragraph {processed_count}/{total_to_process} ({new.paragraph_uid})...", flush=True)
         if await _ingest_one(
-            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "added"
+            state, client, summarize, new, rel_path, source_kind, submit_gate, run_id, "added", summaries_map
         ):
             report.paragraphs_ingested += 1
 
@@ -180,19 +211,36 @@ async def _ingest_one(
     submit_gate: str,
     run_id: int,
     action: str,
+    summaries_map: dict[str, str] | None = None,
 ) -> bool:
-    summary = await summarize(block.text)
+    if summaries_map is not None and block.paragraph_uid in summaries_map:
+        summary = summaries_map[block.paragraph_uid]
+    else:
+        summary = await summarize(block.text)
     episode_uuid = ""
     edge_uuids: list[str] = []
     if client.available:
         try:
-            episode_uuid, edge_uuids = await client.add_episode(
-                name=f"{source_path}#{block.paragraph_uid}",
-                episode_body=summary,
-                source_description=(
-                    f"{submit_gate}|{source_kind}|{block.section_heading or ''}|{block.paragraph_uid}"
-                ),
-            )
+            episode_name = f"{source_path}#{block.paragraph_uid}"
+            existing_uuid, existing_edges, existing_content = await client.get_episode_by_name(episode_name)
+
+            if existing_uuid is not None:
+                if existing_content == summary:
+                    episode_uuid = existing_uuid
+                    edge_uuids = existing_edges
+                    print(f"[Ingest] Reusing existing episode from Neo4j for {episode_name}", flush=True)
+                else:
+                    print(f"[Ingest] Episode content changed. Removing old episode {existing_uuid}...", flush=True)
+                    await client.remove_episode(existing_uuid)
+
+            if not episode_uuid:
+                episode_uuid, edge_uuids = await client.add_episode(
+                    name=episode_name,
+                    episode_body=summary,
+                    source_description=(
+                        f"{submit_gate}|{source_kind}|{block.section_heading or ''}|{block.paragraph_uid}"
+                    ),
+                )
         except Exception as exc:  # noqa: BLE001
             store.log_paragraph_event(
                 submit_run_id=run_id,

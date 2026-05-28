@@ -50,3 +50,22 @@ def test_inject_paragraph_uids_idempotent() -> None:
     blocks = split_paragraphs(text)
     again = inject_paragraph_uids(text, blocks)
     assert again.count("paragraph_uid: 11111111") == 1
+
+
+def test_split_paragraphs_respects_custom_alphanumeric_uids() -> None:
+    text = """# Title
+
+<!-- paragraph_uid: wuxia-01-001 -->
+
+First paragraph with enough characters to avoid merge into the next block for testing.
+
+<!-- paragraph_uid: another_uid_999 -->
+
+Second paragraph also long enough to stand alone under the eighty character threshold rule.
+"""
+    blocks = split_paragraphs(text)
+    uids = {b.paragraph_uid for b in blocks}
+    assert "wuxia-01-001" in uids
+    assert "another_uid_999" in uids
+    assert len(blocks) == 2
+

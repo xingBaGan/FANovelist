@@ -14,6 +14,9 @@ class GraphitiSettings:
     neo4j_database: str
     group_id: str
     openai_api_key: str | None
+    deepseek_api_key: str | None = None
+    siliconflow_api_key: str | None = None
+    xiaomi_api_key: str | None = None
 
     @classmethod
     def from_env(cls, *, group_id: str | None = None) -> GraphitiSettings:
@@ -24,6 +27,9 @@ class GraphitiSettings:
             neo4j_database=os.environ.get("NEO4J_DATABASE", "neo4j"),
             group_id=group_id or os.environ.get("GRAPHITI_GROUP_ID", "default"),
             openai_api_key=os.environ.get("OPENAI_API_KEY"),
+            deepseek_api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            siliconflow_api_key=os.environ.get("SILICONFLOW_API_KEY"),
+            xiaomi_api_key=os.environ.get("XIAOMI_API_KEY"),
         )
 
     @property
