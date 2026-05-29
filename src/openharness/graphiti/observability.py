@@ -89,21 +89,6 @@ def log_artifacts(run: object | None, paths: list[Path], artifact_path: str = "g
             mlflow.log_artifact(str(p), artifact_path=artifact_path)
 
 
-def _max_logged_text_chars() -> int:
-    raw = os.environ.get("GRAPHITI_MLFLOW_MAX_TEXT_CHARS", "4000")
-    try:
-        return max(256, int(raw))
-    except ValueError:
-        return 4000
-
-
-def _truncate_text(text: str, *, limit: int | None = None) -> str:
-    cap = limit if limit is not None else _max_logged_text_chars()
-    if len(text) <= cap:
-        return text
-    return text[:cap] + f"\n... [truncated, {len(text)} chars total]"
-
-
 def usage_from_completion(usage: object | None) -> dict[str, int]:
     """Normalize OpenAI-style usage objects to token metrics."""
     if usage is None:
@@ -144,19 +129,17 @@ def log_llm_trace(
         return
 
     metrics = usage_from_completion(usage)
-    safe_messages = [
-        {**m, "content": _truncate_text(str(m.get("content", "")))} for m in messages
-    ]
+    logged_messages = [{**m, "content": str(m.get("content", ""))} for m in messages]
     try:
         with mlflow.start_span(name=name, span_type="CHAT_MODEL") as span:
-            span.set_inputs({"model": model, "messages": safe_messages})
+            span.set_inputs({"model": model, "messages": logged_messages})
             span.set_outputs(
                 {
                     "choices": [
                         {
                             "message": {
                                 "role": "assistant",
-                                "content": _truncate_text(response_content),
+                                "content": response_content,
                             }
                         }
                     ]
@@ -203,10 +186,8 @@ def log_llm_call(
     payload = {
         "name": name,
         "model": model,
-        "messages": [
-            {**m, "content": _truncate_text(str(m.get("content", "")))} for m in messages
-        ],
-        "response": _truncate_text(response_content),
+        "messages": [{**m, "content": str(m.get("content", ""))} for m in messages],
+        "response": response_content,
         "usage": metrics,
     }
     temp_path: Path | None = None
