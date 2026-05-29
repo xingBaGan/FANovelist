@@ -7,6 +7,8 @@ import logging
 import os
 from openai import AsyncOpenAI
 
+from openharness.graphiti.observability import log_llm_call
+
 logger = logging.getLogger(__name__)
 
 Summarizer = Callable[[str], Awaitable[str]]
@@ -51,20 +53,29 @@ async def openai_summarizer(text: str) -> str:
 
         logger.debug("Summarizing paragraph of length %d using model %s...", len(text), model)
 
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": text},
+        ]
         try:
             response = await client.chat.completions.create(
                 model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": text},
-                ],
+                messages=messages,
                 temperature=0.3,
             )
         except Exception as exc:
             logger.exception("Failed to summarize paragraph via OpenAI API: %s", exc)
             raise
 
-    summary = response.choices[0].message.content
+    summary = response.choices[0].message.content or ""
+    log_llm_call(
+        None,
+        name="summarize_paragraph",
+        model=model,
+        messages=messages,
+        response_content=summary,
+        usage=response.usage,
+    )
     if summary is None:
         logger.warning("OpenAI API returned an empty completion content.")
         return ""
@@ -121,18 +132,27 @@ async def openai_batch_summarizer(texts: list[str]) -> list[str]:
     if base_url:
         client_kwargs["base_url"] = base_url
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content},
+    ]
     try:
         async with AsyncOpenAI(**client_kwargs) as client:
             response = await client.chat.completions.create(
                 model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_content},
-                ],
+                messages=messages,
                 temperature=0.3,
                 response_format={"type": "json_object"},
             )
             result_str = response.choices[0].message.content or "{}"
+            log_llm_call(
+                None,
+                name="summarize_batch",
+                model=model,
+                messages=messages,
+                response_content=result_str,
+                usage=response.usage,
+            )
             result_json = json.loads(result_str)
             summaries = result_json.get("summaries", [])
 

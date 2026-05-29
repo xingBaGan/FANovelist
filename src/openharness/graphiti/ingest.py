@@ -12,6 +12,7 @@ from openharness.graphiti.config import GraphitiSettings
 from openharness.graphiti.ingest_store import IngestStateStore
 from openharness.graphiti.paragraphs import ParagraphBlock, split_paragraphs
 from openharness.graphiti.reconcile import reconcile_paragraphs
+from openharness.graphiti.observability import log_llm_call
 from openharness.graphiti.summarize import Summarizer, passthrough_summarizer
 
 
@@ -393,18 +394,27 @@ async def _extract_and_save_value_shifts(
         "Return ONLY valid JSON, no markdown formatting, no explanation."
     )
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": paragraph_text},
+    ]
     try:
         async with AsyncOpenAI(**client_kwargs) as openai_client:
             response = await openai_client.chat.completions.create(
                 model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": paragraph_text},
-                ],
+                messages=messages,
                 temperature=0.1,
                 response_format={"type": "json_object"} if "gpt-4" in model or "mimo" in model or "deepseek" in model else None,
             )
-            content = response.choices[0].message.content
+            content = response.choices[0].message.content or ""
+            log_llm_call(
+                None,
+                name=f"scene_value_shift/{paragraph_uid}",
+                model=model,
+                messages=messages,
+                response_content=content,
+                usage=response.usage,
+            )
             if content:
                 data = json.loads(content)
                 conflict_focus = data.get("conflict_focus")

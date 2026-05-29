@@ -14,6 +14,7 @@ from openharness.graphiti.ontology import (
     NOVEL_ENTITY_TYPES,
     NOVEL_EXTRACTION_INSTRUCTIONS,
 )
+from openharness.graphiti.observability import log_llm_call
 from openharness.graphiti.prompts_patch import apply_novel_language_prompt_patches
 from openharness.graphiti.save_patch import apply_graphiti_save_patches
 
@@ -84,6 +85,14 @@ if _GRAPHITI_AVAILABLE:
                     response_format={"type": "json_object"},
                 )
                 result = response.choices[0].message.content or "{}"
+                log_llm_call(
+                    None,
+                    name="graphiti_extract",
+                    model=self.model,
+                    messages=openai_messages,
+                    response_content=result,
+                    usage=response.usage,
+                )
                 return json.loads(result)
             except Exception:
                 raise

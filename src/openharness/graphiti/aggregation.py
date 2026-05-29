@@ -9,6 +9,7 @@ from openai import AsyncOpenAI
 
 from openharness.graphiti.client import GraphitiClient
 from openharness.graphiti.ingest_store import IngestStateStore
+from openharness.graphiti.observability import log_llm_call
 
 
 async def classify_and_aggregate_summaries(
@@ -43,17 +44,26 @@ async def classify_and_aggregate_summaries(
         "Output ONLY valid JSON, no markdown formatting."
     )
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": json.dumps(paragraph_list, ensure_ascii=False)},
+    ]
     async with AsyncOpenAI(api_key=api_key, base_url=base_url) as openai_client:
         response = await openai_client.chat.completions.create(
             model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": json.dumps(paragraph_list, ensure_ascii=False)},
-            ],
+            messages=messages,
             temperature=0.2,
             response_format={"type": "json_object"} if "gpt-4" in model or "mimo" in model or "deepseek" in model else None,
         )
-        plan_content = response.choices[0].message.content
+        plan_content = response.choices[0].message.content or ""
+        log_llm_call(
+            None,
+            name="aggregate_summaries",
+            model=model,
+            messages=messages,
+            response_content=plan_content,
+            usage=response.usage,
+        )
 
     if not plan_content:
         raise RuntimeError("Empty response from LLM during aggregation.")

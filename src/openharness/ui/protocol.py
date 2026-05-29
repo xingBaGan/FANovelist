@@ -219,6 +219,7 @@ def _state_payload(state: AppState) -> dict[str, Any]:
         "mcp_failed": state.mcp_failed,
         "bridge_sessions": state.bridge_sessions,
         "output_style": state.output_style,
+        "mlflow_status": state.mlflow_status,
         "keybindings": dict(state.keybindings),
     }
 

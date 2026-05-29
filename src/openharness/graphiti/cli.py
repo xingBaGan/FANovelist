@@ -33,6 +33,12 @@ def graphiti_ingest(
     from openharness.graphiti.client import GraphitiClient
     from openharness.graphiti.config import GraphitiSettings
     from openharness.graphiti.ingest import ingest_submitted_document
+    from openharness.graphiti.observability import (
+        log_artifacts,
+        log_metrics,
+        log_params,
+        start_graphiti_run,
+    )
     from openharness.graphiti.paragraphs import split_paragraphs
     from openharness.graphiti.summary_stage import parse_summary_file
 
@@ -114,7 +120,34 @@ def graphiti_ingest(
             "submit_run_id": report.submit_run_id,
         }
 
-    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+    with start_graphiti_run(
+        run_name="graphiti_ingest",
+        tags={"pipeline": "ingest", "group_id": gid},
+    ) as run:
+        log_params(
+            run,
+            {
+                "gate": gate,
+                "kind": kind,
+                "scope": scope,
+                "direct": direct,
+                "approved": approved,
+                "source": str(source.resolve()),
+            },
+        )
+        result = asyncio.run(_run())
+        log_metrics(
+            run,
+            {
+                "paragraphs_ingested": int(result["paragraphs_ingested"]),
+                "paragraphs_skipped": int(result["paragraphs_skipped"]),
+                "paragraphs_superseded": int(result["paragraphs_superseded"]),
+                "entities_promoted": int(result["entities_promoted"]),
+            },
+        )
+        log_artifacts(run, [source.resolve(), source.resolve().with_suffix(".summary.md")])
+
+    typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 @graphiti_app.command("stage-summary")
@@ -124,6 +157,12 @@ def graphiti_stage_summary(
 ) -> None:
     """Generate or update the intermediate summary buffer file."""
     from openharness.graphiti.summary_stage import stage_chapter_summaries
+    from openharness.graphiti.observability import (
+        log_artifacts,
+        log_metrics,
+        log_params,
+        start_graphiti_run,
+    )
 
     async def _run() -> dict[str, object]:
         summary_path, stats = await stage_chapter_summaries(
@@ -136,7 +175,28 @@ def graphiti_stage_summary(
         }
 
     try:
-        res = asyncio.run(_run())
+        with start_graphiti_run(
+            run_name="graphiti_stage_summary",
+            tags={"pipeline": "stage_summary"},
+        ) as run:
+            log_params(
+                run,
+                {
+                    "source": str(source.resolve()),
+                    "studio_root": str(studio_root.resolve()),
+                },
+            )
+            res = asyncio.run(_run())
+            stats = res["stats"]
+            log_metrics(
+                run,
+                {
+                    "summaries_reused": int(stats["reused"]),
+                    "summaries_updated": int(stats["updated"]),
+                    "summaries_created": int(stats["created"]),
+                },
+            )
+            log_artifacts(run, [source.resolve(), Path(str(res["summary_path"]))])
         typer.echo(json.dumps(res, ensure_ascii=False, indent=2))
     except Exception as e:
         typer.echo(f"Error: {e}", err=True)

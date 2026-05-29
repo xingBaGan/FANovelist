@@ -1889,6 +1889,11 @@ def create_default_command_registry(
             f"- mcp_configured: {'yes' if context.mcp_summary and 'No MCP' not in context.mcp_summary else 'no'}",
             f"- auth_configured: {'yes' if manager.get_profile_statuses()[active_profile_name]['configured'] else 'no'}",
         ]
+        from openharness.api.mlflow_tracing import describe_mlflow_agent_status
+
+        lines.append(f"- mlflow_agent: {describe_mlflow_agent_status()}")
+        if state is not None:
+            lines.append(f"- mlflow_status_ui: {state.mlflow_status}")
         return CommandResult(message="\n".join(lines))
 
     async def _privacy_settings_handler(_: str, context: CommandContext) -> CommandResult:

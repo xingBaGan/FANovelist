@@ -276,12 +276,12 @@ class IngestStateStore:
                 "DELETE FROM paragraph_edges WHERE paragraph_uid = ?",
                 (paragraph_uid,),
             )
-            for ep in episode_uuids:
+            for ep in sorted(set(episode_uuids)):
                 conn.execute(
                     "INSERT INTO paragraph_graph_links (paragraph_uid, episode_uuid) VALUES (?, ?)",
                     (paragraph_uid, ep),
                 )
-            for edge in edge_uuids:
+            for edge in sorted(set(edge_uuids)):
                 conn.execute(
                     "INSERT INTO paragraph_edges (paragraph_uid, edge_uuid) VALUES (?, ?)",
                     (paragraph_uid, edge),

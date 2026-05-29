@@ -11,6 +11,7 @@ from typing import Any, Awaitable, Callable, Iterable
 from openharness.api.client import AnthropicApiClient, SupportsStreamingMessages
 from openharness.api.codex_client import CodexApiClient
 from openharness.api.copilot_client import CopilotClient
+from openharness.api.mlflow_tracing import describe_mlflow_agent_status, wrap_api_client_if_enabled
 from openharness.api.openai_client import OpenAICompatibleClient
 from openharness.api.provider import auth_status, detect_provider
 from openharness.bridge import get_bridge_manager
@@ -207,6 +208,7 @@ def _resolve_api_client_from_settings(settings) -> SupportsStreamingMessages:
             )
             raise SystemExit(1)
 
+    client: SupportsStreamingMessages
     if settings.api_format == "copilot":
         from openharness.api.copilot_client import COPILOT_DEFAULT_MODEL
 
@@ -215,32 +217,34 @@ def _resolve_api_client_from_settings(settings) -> SupportsStreamingMessages:
             if settings.model in {"claude-sonnet-4-20250514", "claude-sonnet-4-6", "sonnet", "default"}
             else settings.model
         )
-        return CopilotClient(model=copilot_model)
-    if settings.provider == "openai_codex":
+        client = CopilotClient(model=copilot_model)
+    elif settings.provider == "openai_codex":
         auth = _safe_resolve_auth()
-        return CodexApiClient(
+        client = CodexApiClient(
             auth_token=auth.value,
             base_url=settings.base_url,
         )
-    if settings.provider == "anthropic_claude":
-        return AnthropicApiClient(
+    elif settings.provider == "anthropic_claude":
+        client = AnthropicApiClient(
             auth_token=_safe_resolve_auth().value,
             base_url=settings.base_url,
             claude_oauth=True,
             auth_token_resolver=lambda: settings.resolve_auth().value,
         )
-    if settings.api_format in ("openai", "openai_compat"):
+    elif settings.api_format in ("openai", "openai_compat"):
         auth = _safe_resolve_auth()
-        return OpenAICompatibleClient(
+        client = OpenAICompatibleClient(
             api_key=auth.value,
             base_url=settings.base_url,
             timeout=settings.timeout,
         )
-    auth = _safe_resolve_auth()
-    return AnthropicApiClient(
-        api_key=auth.value,
-        base_url=settings.base_url,
-    )
+    else:
+        auth = _safe_resolve_auth()
+        client = AnthropicApiClient(
+            api_key=auth.value,
+            base_url=settings.base_url,
+        )
+    return wrap_api_client_if_enabled(client)
 
 
 async def build_runtime(
@@ -323,6 +327,7 @@ async def build_runtime(
             mcp_failed=sum(1 for status in mcp_manager.list_statuses() if status.state == "failed"),
             bridge_sessions=len(bridge_manager.list_sessions()),
             output_style=settings.output_style,
+            mlflow_status=describe_mlflow_agent_status(),
             keybindings=load_keybindings(),
         )
     )
@@ -558,6 +563,7 @@ def sync_app_state(bundle: RuntimeBundle) -> None:
         mcp_failed=sum(1 for status in bundle.mcp_manager.list_statuses() if status.state == "failed"),
         bridge_sessions=len(get_bridge_manager().list_sessions()),
         output_style=settings.output_style,
+        mlflow_status=describe_mlflow_agent_status(),
         keybindings=load_keybindings(),
     )
 

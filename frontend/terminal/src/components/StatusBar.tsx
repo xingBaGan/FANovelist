@@ -68,6 +68,7 @@ function StatusBarInner({
 	const mode = String(status.permission_mode ?? 'default');
 	const taskCount = tasks.length;
 	const mcpCount = Number(status.mcp_connected ?? 0);
+	const mlflowStatus = String(status.mlflow_status ?? 'off');
 	const inputTokens = Number(status.input_tokens ?? 0);
 	const outputTokens = Number(status.output_tokens ?? 0);
 	const isPlanMode = mode === 'plan' || mode === 'Plan Mode';
@@ -100,6 +101,10 @@ function StatusBarInner({
 							<Text dimColor>mcp: {mcpCount}</Text>
 						</>
 					) : null}
+					<Text dimColor>{SEP}</Text>
+					<Text dimColor color={mlflowStatus.startsWith('on') ? 'green' : undefined}>
+						mlflow: {mlflowStatus}
+					</Text>
 				</Text>
 				{isPlanMode ? (
 					<PlanModeIndicator mode={mode} activeToolName={activeToolName} />
