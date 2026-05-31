@@ -1,0 +1,289 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ComfyUI Workflow Backend",
+    "version": "0.1.0",
+    "description": "FastAPI LAN backend for generating images through a ComfyUI workflow."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8190",
+      "description": "Local backend"
+    },
+    {
+      "url": "http://{{host}}:8190",
+      "description": "LAN backend"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check whether the backend is running and whether it can reach ComfyUI.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Backend health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "comfyui_ok": true,
+                  "comfyui": "http://127.0.0.1:8188",
+                  "workflow": "H:\\Base版\\ComfyUI_Mie_2026_V8.0_Base\\workflow_backend\\workflows\\flux_image.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/generate": {
+      "post": {
+        "summary": "Generate Image",
+        "description": "Submit a prompt to the ComfyUI workflow and return generated image URLs.",
+        "operationId": "generate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRequest"
+              },
+              "example": {
+                "prompt": "A cinematic portrait photo, photorealistic, soft daylight",
+                "negative_prompt": "",
+                "width": 720,
+                "height": 1280,
+                "steps": 6,
+                "cfg": 1,
+                "seed": -1,
+                "filename_prefix": "LAN_Flux2",
+                "wait": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generation completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateResponse"
+                },
+                "example": {
+                  "prompt_id": "00000000-0000-0000-0000-000000000000",
+                  "seed": 123456789,
+                  "images": [
+                    {
+                      "filename": "LAN_Flux2_00001_.png",
+                      "subfolder": "",
+                      "type": "output",
+                      "node_id": "105",
+                      "url": "http://127.0.0.1:8190/image?filename=LAN_Flux2_00001_.png&subfolder=&type=output"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted when wait is false",
+            "content": {
+              "application/json": {
+                "example": {
+                  "prompt_id": "00000000-0000-0000-0000-000000000000"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "504": {
+            "description": "Generation timeout"
+          }
+        }
+      }
+    },
+    "/image": {
+      "get": {
+        "summary": "Get Image",
+        "description": "Proxy an output image from ComfyUI.",
+        "operationId": "image",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "LAN_Flux2_00001_.png"
+          },
+          {
+            "name": "subfolder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "output"
+            },
+            "example": "output"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image bytes",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GenerateRequest": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Positive prompt injected into node 93."
+          },
+          "negative_prompt": {
+            "type": "string",
+            "default": "",
+            "description": "Negative prompt injected into node 86."
+          },
+          "width": {
+            "type": "integer",
+            "example": 720
+          },
+          "height": {
+            "type": "integer",
+            "example": 1280
+          },
+          "batch_size": {
+            "type": "integer",
+            "example": 1
+          },
+          "seed": {
+            "type": "integer",
+            "default": -1,
+            "description": "Use -1 to randomize."
+          },
+          "steps": {
+            "type": "integer",
+            "example": 6
+          },
+          "cfg": {
+            "type": "number",
+            "example": 1
+          },
+          "sampler_name": {
+            "type": "string",
+            "example": "euler"
+          },
+          "scheduler": {
+            "type": "string",
+            "example": "simple"
+          },
+          "denoise": {
+            "type": "number",
+            "example": 1
+          },
+          "filename_prefix": {
+            "type": "string",
+            "default": "LAN_Flux2"
+          },
+          "timeout": {
+            "type": "integer",
+            "default": 600
+          },
+          "wait": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "GenerateResponse": {
+        "type": "object",
+        "properties": {
+          "prompt_id": {
+            "type": "string"
+          },
+          "seed": {
+            "type": "integer"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageInfo"
+            }
+          }
+        }
+      },
+      "ImageInfo": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "subfolder": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "comfyui_ok": {
+            "type": "boolean"
+          },
+          "comfyui": {
+            "type": "string"
+          },
+          "workflow": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

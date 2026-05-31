@@ -24,7 +24,7 @@ _DEFAULT_PROMPT = (
 )
 _DEFAULT_MODEL = "gpt-image-2"
 _DEFAULT_OUTPUT_DIR = "generated_images"
-ImageGenerationProvider = Literal["auto", "openai", "codex"]
+ImageGenerationProvider = Literal["auto", "openai", "codex", "comfyui"]
 
 
 class ImageGenerationToolInput(BaseModel):
@@ -33,7 +33,7 @@ class ImageGenerationToolInput(BaseModel):
     prompt: str = Field(default=_DEFAULT_PROMPT, description="Image generation or edit prompt.")
     provider: ImageGenerationProvider = Field(
         default="auto",
-        description="Image generation provider: auto, openai, or codex.",
+        description="Image generation provider: auto, openai, codex, or comfyui.",
     )
     image_paths: list[str] = Field(
         default_factory=list,
@@ -69,6 +69,11 @@ class ImageGenerationToolInput(BaseModel):
     )
     moderation: str | None = Field(default=None, description="Optional OpenAI moderation setting.")
     overwrite: bool = Field(default=False, description="Whether to overwrite existing output files.")
+    negative_prompt: str = Field(default="", description="Negative prompt for ComfyUI provider.")
+    steps: int = Field(default=6, description="Sampling steps for ComfyUI provider.")
+    cfg: float = Field(default=1.0, description="CFG scale for ComfyUI provider.")
+    seed: int = Field(default=-1, description="Random seed for ComfyUI provider (use -1 for random).")
+    filename_prefix: str = Field(default="LAN_Flux2", description="Filename prefix for generated image in ComfyUI.")
 
 
 class ImageGenerationTool(BaseTool):
@@ -90,11 +95,15 @@ class ImageGenerationTool(BaseTool):
             config = {}
         provider = _resolve_provider(arguments.provider, config)
 
+        mode = "edit" if arguments.image_paths else "generate"
+        model = (arguments.model or str(config.get("model") or _DEFAULT_MODEL)).strip()
+
         try:
             output_paths = self._resolve_output_paths(arguments, context.cwd)
             if provider == "codex":
                 image_b64, revised_prompt = await self._generate_with_codex(arguments, config)
                 written = self._write_images(image_b64, output_paths, overwrite=arguments.overwrite)
+                self._log_to_mlflow(written, arguments.prompt, model)
                 extra = f"\nRevised prompt: {revised_prompt}" if revised_prompt else ""
                 return ToolResult(
                     output=(
@@ -108,15 +117,29 @@ class ImageGenerationTool(BaseTool):
                         "revised_prompt": revised_prompt,
                     },
                 )
+            elif provider == "comfyui":
+                image_b64 = await self._generate_with_comfyui(arguments, config)
+                written = self._write_images(image_b64, output_paths, overwrite=arguments.overwrite)
+                self._log_to_mlflow(written, arguments.prompt, "comfyui")
+                return ToolResult(
+                    output=(
+                        f"[Image generation via ComfyUI ({mode})]\n"
+                        + "\n".join(f"Wrote {path}" for path in written)
+                    ),
+                    metadata={
+                        "paths": [str(path) for path in written],
+                        "provider": "comfyui",
+                        "model": "comfyui",
+                    },
+                )
 
             image_b64 = await self._generate_with_openai(arguments, config)
             written = self._write_images(image_b64, output_paths, overwrite=arguments.overwrite)
+            self._log_to_mlflow(written, arguments.prompt, model)
         except Exception as exc:
             log.exception("image_generation failed")
             return ToolResult(output=f"image_generation failed: {exc}", is_error=True)
 
-        mode = "edit" if arguments.image_paths else "generate"
-        model = (arguments.model or str(config.get("model") or _DEFAULT_MODEL)).strip()
         return ToolResult(
             output=(
                 f"[Image generation via {model} ({mode}, openai)]\n"
@@ -124,6 +147,50 @@ class ImageGenerationTool(BaseTool):
             ),
             metadata={"paths": [str(path) for path in written], "model": model, "mode": mode, "provider": "openai"},
         )
+
+    def _log_to_mlflow(self, paths: list[Path], prompt: str, model: str) -> None:
+        try:
+            import mlflow
+            import os
+            
+            # Setup experiment
+            experiment = os.environ.get("OPENHARNESS_MLFLOW_EXPERIMENT", "openharness")
+            mlflow.set_experiment(experiment)
+            
+            active_run = mlflow.active_run()
+            nested = active_run is not None
+            
+            # Start run (nested if a run is already active) to log parameters and artifacts
+            with mlflow.start_run(run_name=f"image_generation:{model}", nested=nested) as run:
+                mlflow.log_param("prompt", prompt)
+                mlflow.log_param("model", model)
+                
+                # Log generated images as artifacts (Method 1)
+                for path in paths:
+                    if path.exists():
+                        mlflow.log_artifact(str(path), artifact_path="generated_images")
+                
+                # Write a span trace to show in the MLflow Traces UI (and display the image as inline HTML / base64)
+                # Check if mlflow telemetry/tracing support is active (mlflow 2.14+)
+                if hasattr(mlflow, "start_span"):
+                    span_name = f"image_generation:{model}"
+                    with mlflow.start_span(name=span_name, span_type="TOOL") as span:
+                        span.set_inputs({
+                            "prompt": prompt,
+                            "model": model,
+                        })
+                        outputs = []
+                        for path in paths:
+                            if path.exists():
+                                data = base64.b64encode(path.read_bytes()).decode("ascii")
+                                # Embed HTML img inside the trace outputs so it displays directly in the UI
+                                outputs.append({
+                                    "file_path": str(path),
+                                    "image_html": f'<img src="data:image/png;base64,{data}" width="300" style="border-radius: 8px;" />'
+                                })
+                        span.set_outputs({"images": outputs})
+        except Exception:
+            pass
 
     async def _generate_with_openai(self, arguments: ImageGenerationToolInput, config: dict[str, object]) -> list[str]:
         model = (arguments.model or str(config.get("model") or _DEFAULT_MODEL)).strip()
@@ -193,6 +260,66 @@ class ImageGenerationTool(BaseTool):
             raise RuntimeError("Codex hosted image_generation returned no image result")
         return image_results, revised_prompt
 
+    async def _generate_with_comfyui(
+        self,
+        arguments: ImageGenerationToolInput,
+        config: dict[str, object],
+    ) -> list[str]:
+        import os
+        comfy_url = (
+            str(config.get("comfyui_base_url") or "").strip()
+            or os.environ.get("COMFYUI_BACKEND_URL", "").strip()
+            or os.environ.get("COMFYUI_URL", "").strip()
+            or "http://127.0.0.1:8190"
+        )
+        if comfy_url.endswith("/"):
+            comfy_url = comfy_url[:-1]
+
+        # Parse size parameter (e.g. "720x1280", "1024x1024")
+        width = 720
+        height = 1280
+        if arguments.size and arguments.size != "auto":
+            parts = arguments.size.split("x")
+            if len(parts) == 2:
+                try:
+                    width = int(parts[0])
+                    height = int(parts[1])
+                except ValueError:
+                    pass
+
+        payload = {
+            "prompt": arguments.prompt,
+            "negative_prompt": arguments.negative_prompt or "",
+            "width": width,
+            "height": height,
+            "steps": arguments.steps,
+            "cfg": arguments.cfg,
+            "seed": arguments.seed,
+            "filename_prefix": arguments.filename_prefix or "LAN_Flux2",
+            "wait": True,
+        }
+
+        async with httpx.AsyncClient(timeout=600.0) as client:
+            resp = await client.post(f"{comfy_url}/generate", json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+
+            images_info = data.get("images", [])
+            b64_results: list[str] = []
+            for img in images_info:
+                filename = img.get("filename")
+                subfolder = img.get("subfolder", "")
+                type_ = img.get("type", "output")
+
+                img_url = f"{comfy_url}/image?filename={filename}&subfolder={subfolder}&type={type_}"
+                img_resp = await client.get(img_url)
+                img_resp.raise_for_status()
+
+                b64_data = base64.b64encode(img_resp.content).decode("utf-8")
+                b64_results.append(b64_data)
+
+            return b64_results
+
     @staticmethod
     async def _generate_images(arguments: ImageGenerationToolInput, model: str, api_key: str, base_url: str) -> list[str]:
         client = AsyncOpenAI(
@@ -200,8 +327,8 @@ class ImageGenerationTool(BaseTool):
             base_url=_normalize_openai_base_url(base_url),
             default_headers={"Authorization": f"Bearer {api_key}"},
         )
-        result = await client.images.generate(**_image_payload(arguments, model))
-        return _extract_b64_images(result)
+        result = await client.images.generate(**_image_payload(arguments, model, base_url))
+        return await _extract_b64_images(result)
 
     @staticmethod
     async def _edit_images(arguments: ImageGenerationToolInput, model: str, api_key: str, base_url: str) -> list[str]:
@@ -213,7 +340,7 @@ class ImageGenerationTool(BaseTool):
         image_handles = [Path(path).expanduser().resolve().open("rb") for path in arguments.image_paths]
         mask_handle = Path(arguments.mask_path).expanduser().resolve().open("rb") if arguments.mask_path else None
         try:
-            payload = _image_payload(arguments, model)
+            payload = _image_payload(arguments, model, base_url)
             payload["image"] = image_handles if len(image_handles) > 1 else image_handles[0]
             if mask_handle is not None:
                 payload["mask"] = mask_handle
@@ -223,7 +350,7 @@ class ImageGenerationTool(BaseTool):
                 handle.close()
             if mask_handle is not None:
                 mask_handle.close()
-        return _extract_b64_images(result)
+        return await _extract_b64_images(result)
 
     @staticmethod
     def _resolve_output_paths(arguments: ImageGenerationToolInput, cwd: Path) -> list[Path]:
@@ -259,30 +386,43 @@ class ImageGenerationTool(BaseTool):
         return written
 
 
-def _resolve_provider(requested: str, config: dict[str, object]) -> Literal["openai", "codex"]:
-    if requested in {"openai", "codex"}:
+def _resolve_provider(requested: str, config: dict[str, object]) -> Literal["openai", "codex", "comfyui"]:
+    if requested in {"openai", "codex", "comfyui"}:
         return requested  # type: ignore[return-value]
     configured = str(config.get("provider") or "auto").strip().lower()
-    if configured in {"openai", "codex"}:
+    if configured in {"openai", "codex", "comfyui"}:
         return configured  # type: ignore[return-value]
     if str(config.get("codex_auth_token") or "").strip():
         return "codex"
+    if str(config.get("comfyui_base_url") or "").strip():
+        return "comfyui"
     return "openai"
 
 
-def _image_payload(arguments: ImageGenerationToolInput, model: str) -> dict[str, Any]:
+def _image_payload(arguments: ImageGenerationToolInput, model: str, base_url: str = "") -> dict[str, Any]:
+    is_siliconflow = "siliconflow" in base_url.lower() or model.startswith(("Kwai-", "black-forest-labs/", "stabilityai/"))
+    
+    size = arguments.size
+    if is_siliconflow and size == "auto":
+        size = "1024x1024"
+
     payload: dict[str, Any] = {
         "model": model,
         "prompt": arguments.prompt,
         "n": arguments.n,
-        "size": arguments.size,
-        "quality": arguments.quality,
-        "background": arguments.background,
-        "output_format": arguments.output_format,
-        "output_compression": arguments.output_compression,
-        "input_fidelity": arguments.input_fidelity,
-        "moderation": arguments.moderation,
+        "size": size,
     }
+
+    if not is_siliconflow:
+        payload.update({
+            "quality": arguments.quality,
+            "background": arguments.background,
+            "output_format": arguments.output_format,
+            "output_compression": arguments.output_compression,
+            "input_fidelity": arguments.input_fidelity,
+            "moderation": arguments.moderation,
+        })
+
     return {key: value for key, value in payload.items() if value is not None}
 
 
@@ -343,7 +483,7 @@ async def _iter_sse_events(response: httpx.Response):
                 yield event
 
 
-def _extract_b64_images(result: Any) -> list[str]:
+async def _extract_b64_images(result: Any) -> list[str]:
     images: list[str] = []
     for item in getattr(result, "data", []) or []:
         b64 = getattr(item, "b64_json", None)
@@ -351,6 +491,12 @@ def _extract_b64_images(result: Any) -> list[str]:
             images.append(b64)
             continue
         url = getattr(item, "url", None)
-        if isinstance(url, str) and url.startswith("data:image/") and ";base64," in url:
-            images.append(url.split(";base64,", 1)[1])
+        if isinstance(url, str):
+            if url.startswith("data:image/") and ";base64," in url:
+                images.append(url.split(";base64,", 1)[1])
+            elif url.startswith(("http://", "https://")):
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    resp = await client.get(url)
+                    resp.raise_for_status()
+                    images.append(base64.b64encode(resp.content).decode("utf-8"))
     return images

@@ -455,6 +455,10 @@ def test_normalize_anthropic_model_name_matches_hermes_behavior():
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-env-override")
         monkeypatch.setenv("OPENHARNESS_SANDBOX_ENABLED", "true")
         monkeypatch.setenv("OPENHARNESS_SANDBOX_FAIL_IF_UNAVAILABLE", "1")
+        monkeypatch.setenv("OPENHARNESS_IMAGE_GENERATION_MODEL", "Kwai-Kolors/Kolors")
+        monkeypatch.setenv("OPENHARNESS_IMAGE_GENERATION_BASE_URL", "https://api.siliconflow.cn/v1")
+        monkeypatch.setenv("OPENHARNESS_IMAGE_GENERATION_API_KEY", "sk-siliconflow-api-key")
+        monkeypatch.setenv("COMFYUI_BACKEND_URL", "http://remote-comfy:8190")
 
         s = load_settings(path)
 
@@ -465,6 +469,25 @@ def test_normalize_anthropic_model_name_matches_hermes_behavior():
         assert s.api_key == "sk-env-override"
         assert s.sandbox.enabled is True
         assert s.sandbox.fail_if_unavailable is True
+        assert s.image_generation.model == "Kwai-Kolors/Kolors"
+        assert s.image_generation.base_url == "https://api.siliconflow.cn/v1"
+        assert s.image_generation.api_key == "sk-siliconflow-api-key"
+        assert s.image_generation.comfyui_base_url == "http://remote-comfy:8190"
+
+    def test_load_applies_image_generation_siliconflow_fallback(self, tmp_path: Path, monkeypatch):
+        path = tmp_path / "settings.json"
+        path.write_text(json.dumps({}))
+        monkeypatch.setenv("SILICONFLOW_API_KEY", "sk-siliconflow-fallback")
+        s = load_settings(path)
+        assert s.image_generation.api_key == "sk-siliconflow-fallback"
+        assert s.image_generation.base_url == "https://api.siliconflow.cn/v1"
+
+    def test_load_applies_image_generation_comfyui_fallback(self, tmp_path: Path, monkeypatch):
+        path = tmp_path / "settings.json"
+        path.write_text(json.dumps({}))
+        monkeypatch.setenv("COMFYUI_URL", "http://remote-comfy-fallback:8190")
+        s = load_settings(path)
+        assert s.image_generation.comfyui_base_url == "http://remote-comfy-fallback:8190"
 
     def test_load_with_sandbox_settings(self, tmp_path: Path):
         path = tmp_path / "settings.json"

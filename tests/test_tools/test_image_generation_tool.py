@@ -213,3 +213,86 @@ def test_image_generation_config_from_env(monkeypatch: pytest.MonkeyPatch) -> No
     assert cfg.base_url == "https://example.test/v1"
     assert cfg.codex_model == "gpt-5.4"
     assert cfg.is_configured
+
+
+def test_image_generation_config_from_env_comfyui(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COMFYUI_BACKEND_URL", "http://remote-comfy:8190")
+    cfg = ImageGenerationConfig.from_env()
+    assert cfg.comfyui_base_url == "http://remote-comfy:8190"
+    assert cfg.is_configured
+
+
+@pytest.mark.asyncio
+async def test_execute_comfyui_generation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    image_bytes = b"comfyui-png"
+    image_b64 = base64.b64encode(image_bytes).decode("ascii")
+
+    class MockClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def post(self, url, json):
+            assert url == "http://remote-comfy:8190/generate"
+            assert json["prompt"] == "a cat"
+            assert json["negative_prompt"] == "dogs"
+            assert json["width"] == 720
+            assert json["height"] == 1280
+            assert json["steps"] == 10
+            assert json["cfg"] == 2.5
+            assert json["seed"] == 42
+            assert json["filename_prefix"] == "test_prefix"
+            
+            class MockResponse:
+                def raise_for_status(self):
+                    pass
+                def json(self):
+                    return {
+                        "prompt_id": "test-prompt-id",
+                        "seed": 42,
+                        "images": [
+                            {"filename": "test_img.png", "subfolder": "", "type": "output"}
+                        ]
+                    }
+            return MockResponse()
+
+        async def get(self, url):
+            assert url == "http://remote-comfy:8190/image?filename=test_img.png&subfolder=&type=output"
+            class MockResponse:
+                def raise_for_status(self):
+                    pass
+                @property
+                def content(self):
+                    return image_bytes
+            return MockResponse()
+
+    monkeypatch.setattr("openharness.tools.image_generation_tool.httpx.AsyncClient", MockClient)
+
+    tool = ImageGenerationTool()
+    result = await tool.execute(
+        ImageGenerationToolInput(
+            prompt="a cat",
+            negative_prompt="dogs",
+            steps=10,
+            cfg=2.5,
+            seed=42,
+            filename_prefix="test_prefix",
+            output_path="comfy.png",
+            provider="comfyui"
+        ),
+        ToolExecutionContext(
+            cwd=tmp_path,
+            metadata={"image_generation_config": {"comfyui_base_url": "http://remote-comfy:8190"}},
+        ),
+    )
+
+    out = tmp_path / "comfy.png"
+    assert not result.is_error
+    assert out.read_bytes() == image_bytes
+    assert result.metadata["provider"] == "comfyui"
+

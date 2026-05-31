@@ -37,3 +37,6 @@ Thumbs.db
 uv.lock
 mlflow.db
 mlartifacts
+mlruns
+.agents
+generated_images

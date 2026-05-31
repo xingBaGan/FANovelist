@@ -65,6 +65,7 @@ def _resolve_image_generation_config(settings) -> dict[str, str]:
         "base_url": cfg.base_url or env_cfg.base_url,
         "codex_model": cfg.codex_model or env_cfg.codex_model,
         "codex_base_url": cfg.codex_base_url or env_cfg.codex_base_url,
+        "comfyui_base_url": cfg.comfyui_base_url or env_cfg.comfyui_base_url,
     }
 
     try:

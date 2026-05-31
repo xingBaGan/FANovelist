@@ -585,7 +585,7 @@ def _build_dry_run_preview(
             _validate_mcp_server(name, config)
             for name, config in sorted(mcp_servers.items())
         ],
-        "system_prompt_preview": _safe_short(system_prompt_text, limit=600),
+        "system_prompt_preview": system_prompt_text,
     }
     mcp_errors = sum(1 for entry in preview["mcp_servers"] if entry.get("status") == "error")
     preview["validation"]["mcp_errors"] = mcp_errors
