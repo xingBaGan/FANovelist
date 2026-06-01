@@ -40,3 +40,4 @@ mlartifacts
 mlruns
 .agents
 generated_images
+work-*

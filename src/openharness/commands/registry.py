@@ -491,6 +491,91 @@ def create_default_command_registry(
         )
         return CommandResult(message=prompt)
 
+    async def _prompt_handler(args: str, context: CommandContext) -> CommandResult:
+        tokens = args.split()
+        subcommand = tokens[0].lower() if tokens else "list"
+        
+        from openharness.prompts.selector import list_prompt_templates, find_prompt_template_by_name
+        
+        if subcommand in ("list", "show-all"):
+            templates = list_prompt_templates(context.cwd)
+            if not templates:
+                return CommandResult(
+                    message="No prompt templates found.\n"
+                            "You can create template markdown/text files in your project's 'prompts/' directory."
+                )
+            
+            lines = ["Available system prompt templates:", ""]
+            for t in templates:
+                lines.append(f"- **{t['name']}** ({t['file']})")
+                lines.append(f"  {t['description']}")
+                lines.append(f"  Path: {t['path']}")
+                lines.append("")
+            lines.append("To load a template, run: `/prompt load <name>` or `oh -s <name>`")
+            return CommandResult(message="\n".join(lines))
+            
+        elif subcommand == "status":
+            settings = load_settings()
+            current = settings.system_prompt
+            if current:
+                template_path = find_prompt_template_by_name(current, context.cwd)
+                if template_path:
+                    return CommandResult(
+                        message=f"Current custom system prompt template: **{current}**\n"
+                                f"File: {template_path}"
+                    )
+                else:
+                    return CommandResult(
+                        message=f"Current custom system prompt (raw text):\n{current[:200]}..."
+                    )
+            else:
+                return CommandResult(message="No custom system prompt set. Using default OpenHarness system prompt.")
+                
+        elif subcommand == "load":
+            if len(tokens) < 2:
+                return CommandResult(message="Usage: /prompt load <template_name>")
+            name = tokens[1]
+            template_path = find_prompt_template_by_name(name, context.cwd)
+            if not template_path:
+                return CommandResult(message=f"Error: Prompt template '{name}' not found in search directories.")
+                
+            settings = load_settings()
+            settings.system_prompt = name
+            save_settings(settings)
+            
+            # Apply to current engine
+            resolved_prompt = template_path.read_text(encoding="utf-8")
+            context.engine.set_system_prompt(
+                build_runtime_system_prompt(
+                    settings,
+                    cwd=context.cwd,
+                    include_project_memory=context.include_project_memory,
+                )
+            )
+            return CommandResult(message=f"Successfully loaded system prompt template: **{name}**")
+            
+        elif subcommand == "clear":
+            settings = load_settings()
+            settings.system_prompt = None
+            save_settings(settings)
+            context.engine.set_system_prompt(
+                build_runtime_system_prompt(
+                    settings,
+                    cwd=context.cwd,
+                    include_project_memory=context.include_project_memory,
+                )
+            )
+            return CommandResult(message="Custom system prompt cleared. Reset to default.")
+            
+        else:
+            return CommandResult(
+                message="Usage:\n"
+                        "  /prompt list          - List available templates\n"
+                        "  /prompt status        - Show active prompt status\n"
+                        "  /prompt load <name>   - Load a specific template\n"
+                        "  /prompt clear         - Reset to default prompt"
+            )
+
     async def _summary_handler(args: str, context: CommandContext) -> CommandResult:
         max_messages = 8
         if args:
@@ -2330,6 +2415,14 @@ def create_default_command_registry(
     registry.register(SlashCommand("version", "Show the installed OpenHarness version", _version_handler))
     registry.register(SlashCommand("status", "Show session status", _status_handler))
     registry.register(SlashCommand("context", "Show the active runtime system prompt", _context_handler))
+    registry.register(
+        SlashCommand(
+            "prompt",
+            "List, load, clear, or view system prompt templates",
+            _prompt_handler,
+            aliases=("prompts",),
+        )
+    )
     registry.register(SlashCommand("summary", "Summarize conversation history", _summary_handler))
     registry.register(SlashCommand("compact", "Compact older conversation history", _compact_handler))
     registry.register(SlashCommand("cost", "Show token usage and estimated cost", _cost_handler))

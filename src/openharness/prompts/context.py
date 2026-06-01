@@ -89,10 +89,17 @@ def build_runtime_system_prompt(
     if is_coordinator_mode():
         sections = [get_coordinator_system_prompt()]
     else:
-        sections = [build_system_prompt(custom_prompt=settings.system_prompt, cwd=str(cwd))]
-
-    if not is_coordinator_mode() and settings.system_prompt is None:
-        sections[0] = build_system_prompt(cwd=str(cwd))
+        resolved_custom = None
+        if settings.system_prompt is not None:
+            from openharness.prompts.selector import find_prompt_template_by_name, _notify_prompt_loaded
+            template_path = find_prompt_template_by_name(settings.system_prompt, cwd=cwd)
+            if template_path:
+                resolved_custom = template_path.read_text(encoding="utf-8")
+                _notify_prompt_loaded(f"Loaded system prompt template: {template_path.name}", str(template_path))
+            else:
+                resolved_custom = settings.system_prompt
+        
+        sections = [build_system_prompt(custom_prompt=resolved_custom, cwd=str(cwd))]
 
     if settings.fast_mode:
         sections.append(

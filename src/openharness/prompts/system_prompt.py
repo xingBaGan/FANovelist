@@ -120,7 +120,28 @@ def build_system_prompt(
         env = get_environment_info(cwd=cwd)
 
     file_override = _load_system_prompt_override_from_file()
-    base = custom_prompt if custom_prompt is not None else (file_override or _BASE_SYSTEM_PROMPT)
+    
+    resolved_custom = None
+    if custom_prompt is not None:
+        from openharness.prompts.selector import find_prompt_template_by_name
+        template_path = find_prompt_template_by_name(custom_prompt, cwd=cwd)
+        if template_path:
+            resolved_custom = template_path.read_text(encoding="utf-8")
+        else:
+            resolved_custom = custom_prompt
+
+    base = resolved_custom
+    if base is None:
+        if file_override:
+            base = file_override
+        else:
+            from openharness.prompts.selector import find_prompt_template_by_name
+            my_system_path = find_prompt_template_by_name("my-system", cwd=cwd)
+            if my_system_path:
+                base = my_system_path.read_text(encoding="utf-8")
+            else:
+                base = _BASE_SYSTEM_PROMPT
+    
     env_section = _format_environment_section(env)
 
     return f"{base}\n\n{env_section}"
