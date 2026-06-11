@@ -111,7 +111,7 @@ def test_load_plugins_from_project_dir(tmp_path: Path, monkeypatch):
     _write_plugin(plugins_root)
 
     settings = Settings(allow_project_plugins=True)
-    plugins = load_plugins(settings, project)
+    plugins = load_plugins(settings, project, include_bundled=False)
 
     assert len(plugins) == 1
     plugin = plugins[0]
@@ -134,7 +134,7 @@ def test_plugin_skills_and_hooks_are_merged(tmp_path: Path, monkeypatch):
     skills = load_skill_registry(project, settings=settings).list_skills()
     assert any(skill.name == "Deploy" and skill.source == "plugin" for skill in skills)
 
-    plugins = load_plugins(settings, project)
+    plugins = load_plugins(settings, project, include_bundled=False)
     hooks = load_hook_registry(settings, plugins)
     assert "session_start" in hooks.summary()
 
@@ -146,7 +146,7 @@ def test_project_plugins_are_disabled_by_default(tmp_path: Path, monkeypatch):
     plugins_root.mkdir(parents=True)
     _write_plugin(plugins_root)
 
-    plugins = load_plugins(Settings(), project)
+    plugins = load_plugins(Settings(), project, include_bundled=False)
 
     assert plugins == []
 
@@ -159,7 +159,7 @@ def test_project_plugins_disabled_by_default_warns_operator(tmp_path: Path, monk
     _write_plugin(plugins_root)
 
     with caplog.at_level(logging.WARNING):
-        plugins = load_plugins(Settings(), project)
+        plugins = load_plugins(Settings(), project, include_bundled=False)
 
     assert plugins == []
     assert "project-local plugins" in caplog.text
@@ -176,7 +176,7 @@ def test_user_plugins_still_load_when_project_plugins_are_disabled(tmp_path: Pat
     user_plugins_root = get_user_plugins_dir()
     _write_plugin(user_plugins_root)
 
-    plugins = load_plugins(Settings(), project)
+    plugins = load_plugins(Settings(), project, include_bundled=False)
 
     assert len(plugins) == 1
     assert plugins[0].manifest.name == "example"
@@ -189,7 +189,7 @@ def test_enabled_plugin_tools_are_loaded(tmp_path: Path, monkeypatch):
     plugins_root.mkdir(parents=True)
     _write_tool_plugin(plugins_root, enabled_by_default=True)
 
-    plugins = load_plugins(Settings(allow_project_plugins=True), project)
+    plugins = load_plugins(Settings(allow_project_plugins=True), project, include_bundled=False)
 
     assert len(plugins) == 1
     plugin = plugins[0]
@@ -212,7 +212,7 @@ def test_disabled_plugin_tools_are_not_imported(tmp_path: Path, monkeypatch):
         encoding="utf-8",
     )
 
-    plugins = load_plugins(Settings(allow_project_plugins=True), project)
+    plugins = load_plugins(Settings(allow_project_plugins=True), project, include_bundled=False)
 
     assert len(plugins) == 1
     plugin = plugins[0]

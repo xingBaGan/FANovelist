@@ -16,6 +16,7 @@ from openharness.memory import load_memory_prompt
 from openharness.memory.relevance import format_relevant_memories, select_relevant_memories
 from openharness.memory.usage import mark_memory_used
 from openharness.personalization.rules import load_local_rules
+from openharness.plugins.types import LoadedPlugin
 from openharness.prompts.claudemd import load_claude_md_prompt
 from openharness.prompts.system_prompt import build_system_prompt
 from openharness.skills.loader import load_skill_registry
@@ -54,6 +55,55 @@ def _build_skills_section(
     return "\n".join(lines)
 
 
+def _build_plugin_commands_section(
+    plugins: Iterable[LoadedPlugin],
+) -> str | None:
+    """Build a section listing slash commands contributed by enabled plugins.
+
+    Without this section the model has no idea which `/plugin_*` workflows
+    exist — they only show up in the user's command-picker UI. Surfacing them
+    here lets `my-system.md`-style prompts say "route to the right
+    `/montage_*` pipeline" without hardcoding the list.
+
+    Callers must pass already-loaded plugins; the prompt builder must not
+    trigger plugin discovery on its own (plugin loading can have side
+    effects like ``.env`` ingestion).
+    """
+    enabled = [p for p in plugins if p.enabled and p.commands]
+    if not enabled:
+        return None
+
+    lines: list[str] = [
+        "# Available Plugin Commands",
+        "",
+        "The following slash commands are provided by enabled plugins. "
+        "When a user's request matches one of these workflows, route to the "
+        "corresponding `/<command>` instead of re-implementing the work with "
+        "low-level tools. Always confirm the plan with the user before "
+        "invoking a bulk-generation pipeline.",
+        "",
+    ]
+    for plugin in enabled:
+        listable = [
+            cmd
+            for cmd in plugin.commands
+            if cmd.user_invocable and not cmd.disable_model_invocation
+        ]
+        if not listable:
+            continue
+        lines.append(f"## Plugin: `{plugin.manifest.name}`")
+        manifest_desc = (plugin.manifest.description or "").strip()
+        if manifest_desc:
+            lines.append(f"_{manifest_desc}_")
+        lines.append("")
+        for command in listable:
+            desc = (command.description or "").strip().replace("\n", " ")
+            hint = f" {command.argument_hint}" if command.argument_hint else ""
+            lines.append(f"- `/{command.name}{hint}` — {desc}")
+        lines.append("")
+    return "\n".join(lines).rstrip() or None
+
+
 def _build_delegation_section() -> str:
     """Build a concise section describing delegation and worker usage."""
     return "\n".join(
@@ -83,6 +133,7 @@ def build_runtime_system_prompt(
     latest_user_prompt: str | None = None,
     extra_skill_dirs: Iterable[str | Path] | None = None,
     extra_plugin_roots: Iterable[str | Path] | None = None,
+    plugins: Iterable[LoadedPlugin] | None = None,
     include_project_memory: bool = True,
 ) -> str:
     """Build the runtime system prompt with project instructions and memory."""
@@ -121,6 +172,11 @@ def build_runtime_system_prompt(
     )
     if skills_section and not is_coordinator_mode():
         sections.append(skills_section)
+
+    if plugins is not None and not is_coordinator_mode():
+        plugin_commands_section = _build_plugin_commands_section(plugins)
+        if plugin_commands_section:
+            sections.append(plugin_commands_section)
 
     if not is_coordinator_mode():
         sections.append(_build_delegation_section())

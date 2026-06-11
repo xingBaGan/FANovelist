@@ -675,7 +675,7 @@ def _format_dry_run_preview(preview: dict[str, object]) -> str:
 
     if tools:
         lines.extend(["", "Available Tools"])
-        for entry in tools[:12]:
+        for entry in tools:
             required = entry.get("required_args") or []
             optional = entry.get("optional_args") or []
             signature_parts: list[str] = []
@@ -685,9 +685,6 @@ def _format_dry_run_preview(preview: dict[str, object]) -> str:
                 signature_parts.append("optional: " + ", ".join(optional[:4]))
             suffix = f" ({'; '.join(signature_parts)})" if signature_parts else ""
             lines.append(f"- {entry.get('name')}{suffix}")
-        if len(tools) > 12:
-            lines.append(f"- ... (+{len(tools) - 12} more)")
-
     if skills:
         lines.extend(["", "Available Skills"])
         for entry in skills[:8]:
@@ -775,13 +772,6 @@ try:
     from openharness.graphiti.cli import graphiti_app
 
     app.add_typer(graphiti_app)
-except ImportError:
-    pass
-
-try:
-    from openharness.openmontage.bridge.cli import app as montage_app
-
-    app.add_typer(montage_app)
 except ImportError:
     pass
 

@@ -248,6 +248,44 @@ def _resolve_api_client_from_settings(settings) -> SupportsStreamingMessages:
     return wrap_api_client_if_enabled(client)
 
 
+import logging as _logging
+
+_log = _logging.getLogger(__name__)
+
+
+def _maybe_bind_openmontage_session(plugins: list, cwd: str) -> "object | None":
+    """Create and bind a BridgeHookSession if the openmontage plugin is enabled.
+
+    Returns the session so callers can store it in tool_metadata.  Returns
+    None when the plugin is absent, disabled, or the bridge is unavailable.
+
+    The session is bound via ``contextvars.ContextVar.set`` which means it is
+    visible to all subsequent awaits and ``asyncio.to_thread`` calls in the
+    same asyncio task — exactly the scope of one OpenHarness session turn.
+    """
+    om_plugin = next(
+        (p for p in plugins if p.manifest.name == "openmontage" and p.enabled),
+        None,
+    )
+    if om_plugin is None:
+        return None
+    try:
+        from openharness.openmontage.bridge.hooks import (
+            BridgeHookSession,
+            bind_session,
+            install_default_hooks,
+        )
+
+        session = BridgeHookSession.for_pipeline(None, root=Path(cwd))
+        install_default_hooks(session)
+        bind_session(session)
+        _log.debug("OpenMontage bridge session bound: run_id=%s", session.run_id)
+        return session
+    except Exception:
+        _log.debug("Failed to bind OpenMontage bridge session", exc_info=True)
+        return None
+
+
 async def build_runtime(
     *,
     prompt: str | None = None,
@@ -304,6 +342,13 @@ async def build_runtime(
         if plugin.enabled and plugin.tools:
             for tool in plugin.tools:
                 tool_registry.register(tool)
+
+    # Bind an OpenMontage bridge session when the openmontage plugin is active.
+    # This ensures trace/checkpoint/cost hooks fire for every om_* tool call
+    # regardless of whether the user entered via `oh montage agent` or via a
+    # normal TUI / print-mode session that runs a /montage_* slash command.
+    _om_session = _maybe_bind_openmontage_session(plugins, cwd)
+
     provider = detect_provider(settings)
     bridge_manager = get_bridge_manager()
     app_state = AppStateStore(
@@ -348,6 +393,7 @@ async def build_runtime(
         latest_user_prompt=prompt,
         extra_skill_dirs=normalized_skill_dirs,
         extra_plugin_roots=normalized_plugin_roots,
+        plugins=plugins,
         include_project_memory=include_project_memory,
     )
     from uuid import uuid4
@@ -402,6 +448,7 @@ async def build_runtime(
             "edit_approval_prompt": edit_approval_prompt,
             "vision_model_config": _resolve_vision_config(settings),
             "image_generation_config": _resolve_image_generation_config(settings),
+            "openmontage_session": _om_session,
             **restored_metadata,
         },
     )

@@ -34,6 +34,7 @@ from openharness.openmontage.bridge.tool_adapter import (
     OMToolAdapter,
     adapt_all_tools,
 )
+from openharness.openmontage.bridge.stage_tool import OmEnterStageTool
 from openharness.openmontage.native import TtsSelectorNativeTool
 from openharness.plugins.schemas import PluginManifest
 from openharness.plugins.types import LoadedPlugin, PluginCommandDefinition
@@ -52,22 +53,69 @@ AGENT_SKILLS_DIR = PACKAGE_ROOT / "agents_skills"
 # ---------------------------------------------------------------------------
 
 
+_SKIP_NAMES = {"INDEX.MD", "PROVENANCE.MD", "README.MD", "CHANGELOG.MD"}
+
+
 def _load_openmontage_skills(
     base: Path,
     source: str,
+    *,
+    skill_md_only: bool = False,
+    disable_model_invocation: bool = False,
 ) -> list[SkillDefinition]:
-    """Load every ``*.md`` under ``base`` as a SkillDefinition.
+    """Load skills from an OpenMontage skill tree.
 
-    OpenMontage organizes Layer-2 skills as ``skills/<group>/<...>.md`` and
-    Layer-3 skills as ``agents_skills/<pkg>/SKILL.md`` (+ companions). The
-    OpenHarness stock loader only knows the ``<dir>/SKILL.md`` shape, so
-    we walk the tree ourselves and rely on the YAML frontmatter we added.
+    Two loading modes are supported:
+
+    ``skill_md_only=False`` (default — Layer-2 ``skills/`` tree)
+        Every ``*.md`` file is a skill entry.  Used for ``skills/`` where
+        each director file is its own addressable skill
+        (e.g. ``pipelines/clip-factory/idea-director``).
+
+    ``skill_md_only=True`` (Layer-3 ``agents_skills/`` tree)
+        Only ``SKILL.md`` files at the *first level of each sub-package* are
+        treated as skill entry points.  Companion reference documents
+        (``references/*.md``, ``examples/*.md``, …) live *inside* that
+        package and are not individually listed — the model loads the whole
+        package via ``skill(name="…")``.  This avoids inflating the system
+        prompt listing with hundreds of internal reference docs.
     """
     skills: list[SkillDefinition] = []
     if not base.is_dir():
         return skills
+
+    if skill_md_only:
+        # One level deep: <base>/<pkg>/SKILL.md
+        for pkg_dir in sorted(base.iterdir()):
+            if not pkg_dir.is_dir():
+                continue
+            skill_path = pkg_dir / "SKILL.md"
+            if not skill_path.exists():
+                continue
+            content = skill_path.read_text(encoding="utf-8")
+            rel = pkg_dir.relative_to(base)
+            default_name = "/".join(rel.parts)
+            meta = parse_skill_metadata(default_name, content)
+            name = str(meta["name"]) or default_name
+            description = str(meta["description"]) or default_name
+            skills.append(
+                SkillDefinition(
+                    name=name,
+                    description=description,
+                    content=content,
+                    source=source,
+                    path=str(skill_path),
+                    base_dir=str(pkg_dir),
+                    command_name=pkg_dir.name,
+                    display_name=name if name != default_name else None,
+                    disable_model_invocation=disable_model_invocation,
+                )
+            )
+        return skills
+
+    # Full rglob walk for flat skill trees (Layer-2 directors)
     for path in sorted(base.rglob("*.md")):
-        if path.name.upper() in {"INDEX.MD", "PROVENANCE.MD", "README.MD", "CHANGELOG.MD"}:
+        if path.name.upper() in _SKIP_NAMES:
             continue
         content = path.read_text(encoding="utf-8")
         rel = path.relative_to(base).with_suffix("")
@@ -85,6 +133,7 @@ def _load_openmontage_skills(
                 base_dir=str(path.parent),
                 command_name=path.stem,
                 display_name=name if name != default_name else None,
+                disable_model_invocation=disable_model_invocation,
             )
         )
     return skills
@@ -145,7 +194,9 @@ def _build_command_content(manifest: dict[str, Any]) -> str:
         "1. **Read the executive-producer skill first** via the `skill` tool: "
         f"`{orchestration_skill or 'pipelines/' + str(name) + '/executive-producer'}`.",
         "2. Walk the stages in declaration order. Before doing any work in a "
-        "stage, load that stage's director skill via `skill`.",
+        "stage: (a) call `om_enter_stage` with `{\"stage\": \"<stage_name>\", "
+        "\"pipeline\": \"" + str(name) + "\"}` so the checkpoint hook can "
+        "attribute artifacts, then (b) load that stage's director skill via `skill`.",
         "3. Use OpenMontage tools via their **bridge names**, prefixed with "
         "`om_` (e.g. `om_video_compose`, `om_transcriber`). The original sync "
         "contract is preserved — pass the OM-flavored args under `inputs`.",
@@ -298,17 +349,42 @@ def build_plugin(*, enabled: bool = True) -> LoadedPlugin:
         bare = adapter.om_tool.name
         if bare in READ_ONLY_TOOL_NAMES:
             adapter._read_only = True  # noqa: SLF001 — internal field, deliberately mutable
-    native_tools = [TtsSelectorNativeTool()]
+    native_tools = [TtsSelectorNativeTool(), OmEnterStageTool()]
     all_tools: list[Any] = [*adapters, *native_tools]
     tool_names = {tool.name for tool in all_tools}
 
     manifests = _load_manifests()
     commands, agents = _build_commands(manifests, tool_names=tool_names)
 
-    skills = (
-        _load_openmontage_skills(SKILLS_DIR, source="plugin:openmontage")
-        + _load_openmontage_skills(AGENT_SKILLS_DIR, source="plugin:openmontage")
+    # Layer-2: pipeline directors (skills/) — core/ and meta/ entries appear in the
+    # system prompt listing; pipelines/* directors are hidden (disable_model_invocation)
+    # so they don't flood the listing, but remain accessible via the skill tool when
+    # an executive-producer agent needs to load them at runtime.
+    layer2_core = [
+        replace(skill, disable_model_invocation=True)
+        if skill.name.startswith("pipelines/")
+        else skill
+        for skill in _load_openmontage_skills(
+            SKILLS_DIR,
+            source="plugin:openmontage",
+            skill_md_only=False,
+            disable_model_invocation=False,
+        )
+    ]
+
+    # Layer-3: agent skill packages (agents_skills/) — only SKILL.md entry points.
+    # These are NOT listed in the system prompt because each om_* tool's description
+    # already declares "Layer-3 skills: <name>" telling the model which ones to load
+    # on demand via `skill(name="...")`.  Keeping them hidden avoids 68 extra listing
+    # entries while still making them accessible through the skill tool.
+    layer3 = _load_openmontage_skills(
+        AGENT_SKILLS_DIR,
+        source="plugin:openmontage",
+        skill_md_only=True,
+        disable_model_invocation=True,
     )
+
+    skills = layer2_core + layer3
 
     manifest = PluginManifest(
         name="openmontage",
