@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/edit-director"
+description: "Edit Director - Hybrid Pipeline. This stage creates the layered edit logic for a source-led video with support elements. The order matters: anchor cut first, support layers second."
+when_to_use: "When the agent needs guidance for: edit director - hybrid pipeline."
+---
+
 # Edit Director - Hybrid Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/idea-director"
+description: "Idea Director — Talking Head Pipeline. You are starting a talking-head video project. You have raw footage of a person speaking. Your job is to analyze the footage, understand what it contains, and build a brief that captures the content's essence and production goals."
+when_to_use: "When the agent needs guidance for: idea director — talking head pipeline."
+---
+
 # Idea Director — Talking Head Pipeline
 
 ## When to Use

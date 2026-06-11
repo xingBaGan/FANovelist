@@ -1,3 +1,9 @@
+---
+name: "creative/scene-detect-usage"
+description: "Scene Detection Usage for OpenMontage. ``` DEFAULT METHOD: content (ContentDetector) — works for most content DEFAULT THRESH: 27.0 (range 0-255) MIN SCENE LEN: 1.0s default, 2.0-3.0s for educational video TUNING: Generate stats CSV first, inspect content_val column HARD CUTS:"
+when_to_use: "When the agent needs guidance for: scene detection usage for openmontage."
+---
+
 # Scene Detection Usage for OpenMontage
 
 > Sources: PySceneDetect documentation, FFmpeg scenedetect filter docs, PySceneDetect

@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/research-director"
+description: "Research Director - Character Animation Pipeline. Ground the character-animation plan in real references and current technique. For reference videos, start from `video_analysis_brief`: content, pacing, motion classification, keyframes, color, and production complexity."
+when_to_use: "When the agent needs guidance for: research director - character animation pipeline."
+---
+
 # Research Director - Character Animation Pipeline
 
 ## Goal

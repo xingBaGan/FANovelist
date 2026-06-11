@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/asset-director"
+description: "Asset Director - Podcast Repurpose Pipeline. This stage builds the reusable kit for podcast-derived video assets: subtitles, speaker cards, quote cards, optional topic art, and optional music support."
+when_to_use: "When the agent needs guidance for: asset director - podcast repurpose pipeline."
+---
+
 # Asset Director - Podcast Repurpose Pipeline
 
 ## When To Use

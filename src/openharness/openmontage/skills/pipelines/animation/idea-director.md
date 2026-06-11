@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/idea-director"
+description: "Idea Director - Animation Pipeline. Use this pipeline when the video should be built primarily through designed motion: motion graphics, kinetic typography, diagram-led explainers, math visuals, or illustrative animation."
+when_to_use: "When the agent needs guidance for: idea director - animation pipeline."
+---
+
 # Idea Director - Animation Pipeline
 
 ## When To Use

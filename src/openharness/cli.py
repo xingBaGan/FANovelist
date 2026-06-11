@@ -778,6 +778,13 @@ try:
 except ImportError:
     pass
 
+try:
+    from openharness.openmontage.bridge.cli import app as montage_app
+
+    app.add_typer(montage_app)
+except ImportError:
+    pass
+
 app.add_typer(mcp_app)
 app.add_typer(plugin_app)
 app.add_typer(auth_app)

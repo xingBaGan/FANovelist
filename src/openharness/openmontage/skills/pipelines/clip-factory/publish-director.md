@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/publish-director"
+description: "Publish Director - Clip Factory Pipeline. This stage packages the clip batch into a distribution plan. The goal is not just exported files. The goal is a usable content engine."
+when_to_use: "When the agent needs guidance for: publish director - clip factory pipeline."
+---
+
 # Publish Director - Clip Factory Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/compose-director"
+description: "Compose Director - Localization Dub Pipeline. Render the localized outputs. The quality bar is intelligibility, timing coherence, and clear version labeling across every language package."
+when_to_use: "When the agent needs guidance for: compose director - localization dub pipeline."
+---
+
 # Compose Director - Localization Dub Pipeline
 
 ## When To Use

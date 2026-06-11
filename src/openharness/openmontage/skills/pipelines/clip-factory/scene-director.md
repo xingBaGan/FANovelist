@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/scene-director"
+description: "Scene Director - Clip Factory Pipeline. You are planning how each selected clip will be framed and packaged for its destination platform. This is where clip viability gets proven or disproven."
+when_to_use: "When the agent needs guidance for: scene director - clip factory pipeline."
+---
+
 # Scene Director - Clip Factory Pipeline
 
 ## When To Use

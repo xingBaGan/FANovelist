@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 
-from tools.base_tool import BaseTool, ToolResult, ToolRuntime, ToolStability, ToolStatus, ToolTier
+from openharness.openmontage.tools.base_tool import BaseTool, ToolResult, ToolRuntime, ToolStability, ToolStatus, ToolTier
 
 
 class VideoSelector(BaseTool):
@@ -96,7 +96,7 @@ class VideoSelector(BaseTool):
 
     def _providers(self) -> list[BaseTool]:
         """Auto-discover video generation providers from the registry."""
-        from tools.tool_registry import registry
+        from openharness.openmontage.tools.tool_registry import registry
         registry.ensure_discovered()
         return [t for t in registry.get_by_capability("video_generation")
                 if t.name != self.name]
@@ -135,7 +135,7 @@ class VideoSelector(BaseTool):
         return tool.estimate_runtime(inputs) if tool else 0.0
 
     def execute(self, inputs: dict[str, object]) -> ToolResult:
-        from lib.scoring import rank_providers
+        from openharness.openmontage.lib.scoring import rank_providers
 
         task_context = self._prepare_task_context(inputs)
         candidates = self._providers()
@@ -170,7 +170,7 @@ class VideoSelector(BaseTool):
             # If the provider uses image_url (not reference_image_path), upload and convert
             if "image_url" in tool_props and "image_url" not in adapted:
                 try:
-                    from tools.video._shared import upload_image_fal
+                    from openharness.openmontage.tools.video._shared import upload_image_fal
                     adapted["image_url"] = upload_image_fal(adapted["reference_image_path"])
                 except Exception as e:
                     return ToolResult(success=False, error=f"Failed to upload reference image: {e}")
@@ -200,7 +200,7 @@ class VideoSelector(BaseTool):
         Respects preferred_provider and environment hints as tie-breakers,
         but the scoring engine drives the primary selection.
         """
-        from lib.scoring import rank_providers, ProviderScore
+        from openharness.openmontage.lib.scoring import rank_providers, ProviderScore
 
         preferred = inputs.get("preferred_provider", "auto")
         allowed = set(inputs.get("allowed_providers") or [])
@@ -243,7 +243,7 @@ class VideoSelector(BaseTool):
         return None, None
 
     def _prepare_task_context(self, inputs: dict[str, object]) -> dict[str, object]:
-        from lib.scoring import normalize_task_context
+        from openharness.openmontage.lib.scoring import normalize_task_context
 
         return normalize_task_context(
             inputs.get("task_context", {}),

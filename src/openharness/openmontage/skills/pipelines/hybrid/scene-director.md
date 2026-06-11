@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/scene-director"
+description: "Scene Director - Hybrid Pipeline. You are translating the hybrid structure into a visual system that keeps the source visible and the support layers under control."
+when_to_use: "When the agent needs guidance for: scene director - hybrid pipeline."
+---
+
 # Scene Director - Hybrid Pipeline
 
 ## When To Use

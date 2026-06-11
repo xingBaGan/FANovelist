@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/compose-director"
+description: "Compose Director - Animation Pipeline. Render the animation with an emphasis on text sharpness, timing integrity, and consistent output cadence. For `image_animation` approach, this stage also includes building the composition JSON, sourcing music, running pre-render validation, and performing post-"
+when_to_use: "When the agent needs guidance for: compose director - animation pipeline."
+---
+
 # Compose Director - Animation Pipeline
 
 ## When To Use

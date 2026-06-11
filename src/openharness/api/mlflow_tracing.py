@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -14,7 +15,14 @@ from openharness.api.client import (
     ApiTextDeltaEvent,
     SupportsStreamingMessages,
 )
-from openharness.engine.messages import ConversationMessage, ImageBlock, TextBlock
+from openharness.engine.messages import (
+    ConversationMessage,
+    ImageBlock,
+    TextBlock,
+    ToolResultBlock,
+    ToolUseBlock,
+    serialize_content_block,
+)
 from openharness.graphiti.observability import env_value, log_llm_call, mlflow_tracking_uri
 
 
@@ -150,6 +158,8 @@ def _message_content(message: ConversationMessage) -> str:
             parts.append(block.text)
         elif isinstance(block, ImageBlock):
             parts.append(f"[image:{block.media_type}]")
+        elif isinstance(block, (ToolUseBlock, ToolResultBlock)):
+            parts.append(json.dumps(serialize_content_block(block), ensure_ascii=False))
         else:
             parts.append(f"[{block.type}]")
     return "\n".join(parts)

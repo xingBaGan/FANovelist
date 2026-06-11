@@ -1,3 +1,9 @@
+---
+name: "creative/bg-remove-usage"
+description: "Background Removal Usage for OpenMontage. ``` DEFAULT MODEL: u2net (general purpose, fast) FOR PEOPLE: u2net_human_seg (optimized for human silhouettes) FINE EDGES: Enable alpha_matting (hair, fur, leaves) OUTPUT: Transparent PNG by default; set bg_color for solid replacemen"
+when_to_use: "When the agent needs guidance for: background removal usage for openmontage."
+---
+
 # Background Removal Usage for OpenMontage
 
 > Sources: rembg library documentation, U2Net paper (Qin et al. 2020), IS-Net paper

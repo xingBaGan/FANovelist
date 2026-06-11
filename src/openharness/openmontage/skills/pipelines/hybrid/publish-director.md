@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/publish-director"
+description: "Publish Director - Hybrid Pipeline. Package the hybrid outputs so the hero cut and its derivatives stay organized and the source/support mix remains clear."
+when_to_use: "When the agent needs guidance for: publish director - hybrid pipeline."
+---
+
 # Publish Director - Hybrid Pipeline
 
 ## When To Use

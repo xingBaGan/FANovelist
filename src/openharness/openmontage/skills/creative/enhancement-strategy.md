@@ -1,3 +1,9 @@
+---
+name: "creative/enhancement-strategy"
+description: "Enhancement Strategy Skill. Apply this skill when deciding how to enhance talking-head footage: which face/color/audio presets to use, what overlays to add, and how to balance enhancement visibility with naturalness."
+when_to_use: "When the agent needs guidance for: enhancement strategy skill."
+---
+
 # Enhancement Strategy Skill
 
 ## When to Use

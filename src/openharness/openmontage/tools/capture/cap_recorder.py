@@ -29,7 +29,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -251,7 +251,7 @@ class CapRecorder(BaseTool):
 
     def get_status(self):
         """Cap tool is always 'available' — it gracefully handles missing Cap."""
-        from tools.base_tool import ToolStatus
+        from openharness.openmontage.tools.base_tool import ToolStatus
         return ToolStatus.AVAILABLE
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:

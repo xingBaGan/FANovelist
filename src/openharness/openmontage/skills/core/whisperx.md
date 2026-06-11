@@ -1,3 +1,9 @@
+---
+name: "core/whisperx"
+description: "WhisperX / Transcription Skill. Use the `transcriber` tool whenever you need to convert speech to text from audio or video files. This is the entry point for all transcript-dependent workflows: subtitle generation, edit decisions based on spoken content, and scene analysis from dialogue."
+when_to_use: "When the agent needs guidance for: whisperx / transcription skill."
+---
+
 # WhisperX / Transcription Skill
 
 ## When to Use

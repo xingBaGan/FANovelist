@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/character-design-director"
+description: "Character Design Director - Character Animation Pipeline. Produce `character_design`: a small cast with clear silhouettes, roles, emotions, actions, and style anchors."
+when_to_use: "When the agent needs guidance for: character design director - character animation pipeline."
+---
+
 # Character Design Director - Character Animation Pipeline
 
 ## Goal

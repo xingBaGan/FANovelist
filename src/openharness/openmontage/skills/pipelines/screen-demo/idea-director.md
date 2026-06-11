@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/idea-director"
+description: "Idea Director - Screen Demo Pipeline. Lock `render_runtime` at the idea stage alongside the production mode. Which runtimes are viable depends on the mode:"
+when_to_use: "When the agent needs guidance for: idea director - screen demo pipeline."
+---
+
 # Idea Director - Screen Demo Pipeline
 
 ## Runtime Selection (MANDATORY — present all viable runtimes)

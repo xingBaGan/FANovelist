@@ -1,3 +1,9 @@
+---
+name: "creative/image-provider-usage"
+description: "Image Provider Usage for OpenMontage. - **`style` parameter causes 422 errors** (as of 2026-04). The `style` enum values (`digital_illustration`, `realistic_image`, etc.) are rejected by fal.ai's Recraft V4 endpoint. **Workaround:** encode style direction in the prompt text instead (e.g. \"digital il"
+when_to_use: "When the agent needs guidance for: image provider usage for openmontage."
+---
+
 # Image Provider Usage for OpenMontage
 
 > How to choose between image generation and stock providers, and how to use each effectively.
@@ -13,7 +19,7 @@
 | `grok_image` | Grok Imagine Image (xAI) | $0.02/output + $0.002/input edit image | ~5-15s | Image edits, style transfer, multi-image compositing |
 | `openai_image` | GPT Image 1 (OpenAI) | ~$0.01-0.17 | ~5-15s | Complex instructions, text in images, multi-element |
 | `recraft_image` | Recraft V4 via fal.ai | ~$0.04-0.25 | ~5-10s | Logos, SVG vectors, brand assets, text rendering (see caveat below) |
-| `local_diffusion` | Stable Diffusion (local) | Free | ~30s+ | Offline, privacy, free |
+| `local_diffusion` | FLUX via ComfyUI (`COMFYUI_BACKEND_URL`) | Free | ~10-30s | LAN/local GPU, privacy, free |
 | `image_gen` | Multi (legacy, deprecated) | Varies | Varies | **Deprecated** — use `image_selector` or per-provider tools |
 
 ### Stock Providers (search and download existing images)
@@ -44,7 +50,7 @@
 | **Hero image (key visual)** | `flux_image` | Highest visual quality | `openai_image` |
 | **Thumbnail** | `flux_image` or `recraft_image` | Needs to be eye-catching | — |
 | **Budget/free project** | `pexels_image` or `pixabay_image` | Free, immediate | `local_diffusion` |
-| **Offline/air-gapped** | `local_diffusion` | No network needed | — |
+| **LAN/local GPU FLUX** | `local_diffusion` | Free via ComfyUI backend | `image_generation` provider=comfyui |
 
 ## Provider-Specific Caveats
 

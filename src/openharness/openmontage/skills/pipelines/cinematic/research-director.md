@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/research-director"
+description: "Research Director — Cinematic Pipeline. You are the **Research Director** for a cinematic video (trailers, brand films, dramatic montages, mood-led edits). Your job is to deeply research the subject to ground the cinematic direction in real references, real moods, and real audience expectations — be"
+when_to_use: "When the agent needs guidance for: research director — cinematic pipeline."
+---
+
 # Research Director — Cinematic Pipeline
 
 ## When to Use

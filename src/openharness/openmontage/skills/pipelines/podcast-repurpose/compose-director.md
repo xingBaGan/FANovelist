@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/compose-director"
+description: "Compose Director - Podcast Repurpose Pipeline. Render the podcast-derived outputs with audio fidelity as the top priority. The visuals need to support the speech, not compete with it."
+when_to_use: "When the agent needs guidance for: compose director - podcast repurpose pipeline."
+---
+
 # Compose Director - Podcast Repurpose Pipeline
 
 ## When To Use

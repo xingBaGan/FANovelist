@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/idea-director"
+description: "Idea Director - Avatar Spokesperson Pipeline. Use this pipeline when the deliverable is a presenter-led avatar video: a spokesperson spot, product intro, onboarding message, internal comms update, or short scripted explainer where the speaker remains the visual anchor."
+when_to_use: "When the agent needs guidance for: idea director - avatar spokesperson pipeline."
+---
+
 # Idea Director - Avatar Spokesperson Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/scene-director"
+description: "Scene Director - Character Animation Pipeline. Produce a `scene_plan` where each scene is feasible for rigged character animation."
+when_to_use: "When the agent needs guidance for: scene director - character animation pipeline."
+---
+
 # Scene Director - Character Animation Pipeline
 
 ## Goal

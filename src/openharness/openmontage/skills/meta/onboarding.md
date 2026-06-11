@@ -1,3 +1,9 @@
+---
+name: "meta/onboarding"
+description: "Onboarding — Meta Skill. On the **very first interaction** with a user in a new session when the user has not yet specified a concrete production request — or when their request is vague (\"make me a video\", \"what can you do?\", \"help me create something\")."
+when_to_use: "When the agent needs guidance for: onboarding — meta skill."
+---
+
 # Onboarding — Meta Skill
 
 ## When to Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/asset-director"
+description: "Asset Director - Screen Demo Pipeline. This stage produces the minimal but high-leverage assets that make a screen demo easier to follow: subtitles, audio cleanup, reusable overlays, masks, and optional light-weight support cards."
+when_to_use: "When the agent needs guidance for: asset director - screen demo pipeline."
+---
+
 # Asset Director - Screen Demo Pipeline
 
 ## When To Use

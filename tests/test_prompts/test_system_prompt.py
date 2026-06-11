@@ -28,7 +28,7 @@ def _make_env(**overrides) -> EnvironmentInfo:
 
 def test_build_system_prompt_contains_environment():
     env = _make_env()
-    prompt = build_system_prompt(env=env)
+    prompt = build_system_prompt(env=env, cwd="/nonexistent")
     assert "Linux 5.15.0" in prompt
     assert "x86_64" in prompt
     assert "bash" in prompt
@@ -42,20 +42,20 @@ def test_build_system_prompt_contains_environment():
 
 def test_build_system_prompt_no_git():
     env = _make_env(is_git_repo=False, git_branch=None)
-    prompt = build_system_prompt(env=env)
+    prompt = build_system_prompt(env=env, cwd="/nonexistent")
     assert "Git:" not in prompt
 
 
 def test_build_system_prompt_git_no_branch():
     env = _make_env(is_git_repo=True, git_branch=None)
-    prompt = build_system_prompt(env=env)
+    prompt = build_system_prompt(env=env, cwd="/nonexistent")
     assert "Git: yes" in prompt
     assert "branch:" not in prompt
 
 
 def test_build_system_prompt_custom_prompt():
     env = _make_env()
-    prompt = build_system_prompt(custom_prompt="You are a helpful bot.", env=env)
+    prompt = build_system_prompt(custom_prompt="You are a helpful bot.", env=env, cwd="/nonexistent")
     assert prompt.startswith("You are a helpful bot.")
     assert "Linux 5.15.0" in prompt
     # Base prompt should not appear
@@ -64,5 +64,5 @@ def test_build_system_prompt_custom_prompt():
 
 def test_build_system_prompt_default_includes_base():
     env = _make_env()
-    prompt = build_system_prompt(env=env)
+    prompt = build_system_prompt(env=env, cwd="/nonexistent")
     assert "OpenHarness" in prompt

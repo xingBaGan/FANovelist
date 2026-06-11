@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/scene-director"
+description: "Scene Director - Avatar Spokesperson Pipeline. Plan the visual system for the presenter-led cut. This stage decides how the speaker sits in frame, what support layers appear, and which aspect ratios are actually worth building."
+when_to_use: "When the agent needs guidance for: scene director - avatar spokesperson pipeline."
+---
+
 # Scene Director - Avatar Spokesperson Pipeline
 
 ## When To Use

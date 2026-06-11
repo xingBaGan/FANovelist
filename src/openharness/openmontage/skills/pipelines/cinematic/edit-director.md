@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/edit-director"
+description: "Edit Director - Cinematic Pipeline. This stage turns the beat map into a paced cinematic timeline. Rhythm and restraint matter more than effect count."
+when_to_use: "When the agent needs guidance for: edit director - cinematic pipeline."
+---
+
 # Edit Director - Cinematic Pipeline
 
 ## When To Use

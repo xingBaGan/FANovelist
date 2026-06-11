@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,

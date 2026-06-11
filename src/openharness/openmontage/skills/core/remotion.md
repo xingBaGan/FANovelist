@@ -1,3 +1,9 @@
+---
+name: "core/remotion"
+description: "Remotion Skill. Use Remotion for advanced video composition from Phase 3 onward — anywhere that requires React-based scene assembly, parametric templates, animated overlays, transitions, or data-driven batch rendering. For simple cuts, burns, and encodes, prefer FFmpeg directly."
+when_to_use: "When the agent needs guidance for: remotion skill."
+---
+
 # Remotion Skill
 
 ## When to Use

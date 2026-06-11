@@ -1,3 +1,9 @@
+---
+name: "creative/typography"
+description: "Typography for Video Production. ``` TITLE SIZE: 60-90px at 1080p | 120-180px at 4K BODY SIZE: 40-60px at 1080p | 80-120px at 4K SUBTITLE SIZE: 42px+ at 1080p | 3-5% of video height MAX CHARS/LINE: 32-42 (subtitles) | 30 (overlays) MAX LINES: 2 (subtitles) | 3"
+when_to_use: "When the agent needs guidance for: typography for video production."
+---
+
 # Typography for Video Production
 
 > Sources: School of Motion typography guides, legibility.info video text rules, Wave.video font

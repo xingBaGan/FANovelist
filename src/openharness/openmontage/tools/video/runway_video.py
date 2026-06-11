@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -245,7 +245,7 @@ class RunwayVideo(BaseTool):
         except Exception as e:
             return ToolResult(success=False, error=f"Runway video generation failed: {e}")
 
-        from tools.video._shared import probe_output
+        from openharness.openmontage.tools.video._shared import probe_output
 
         probed = probe_output(output_path)
         return ToolResult(

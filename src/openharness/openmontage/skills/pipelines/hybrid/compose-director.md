@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/compose-director"
+description: "Compose Director - Hybrid Pipeline. Render the hybrid project so source media, support graphics, and audio all remain coherent across outputs."
+when_to_use: "When the agent needs guidance for: compose director - hybrid pipeline."
+---
+
 # Compose Director - Hybrid Pipeline
 
 ## When To Use

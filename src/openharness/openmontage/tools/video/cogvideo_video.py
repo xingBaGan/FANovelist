@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -16,7 +16,7 @@ from tools.base_tool import (
     ToolStatus,
     ToolTier,
 )
-from tools.video._shared import COGVIDEO_VARIANTS, estimate_local_runtime, generate_local_video, local_generation_status, local_install_instructions
+from openharness.openmontage.tools.video._shared import COGVIDEO_VARIANTS, estimate_local_runtime, generate_local_video, local_generation_status, local_install_instructions
 
 
 class CogVideoVideo(BaseTool):

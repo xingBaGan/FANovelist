@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/edit-director"
+description: "Edit Director - Localization Dub Pipeline. Translate the scene plan and localized asset kit into concrete timeline decisions for each language output. The goal is to preserve the source structure where possible without pretending all languages land on the same timing."
+when_to_use: "When the agent needs guidance for: edit director - localization dub pipeline."
+---
+
 # Edit Director - Localization Dub Pipeline
 
 ## When To Use

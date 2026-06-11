@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/publish-director"
+description: "Publish Director - Character Animation Pipeline. Package the final character-animation deliverable with honest metadata and a strong character-forward thumbnail concept."
+when_to_use: "When the agent needs guidance for: publish director - character animation pipeline."
+---
+
 # Publish Director - Character Animation Pipeline
 
 ## Goal

@@ -1,3 +1,9 @@
+---
+name: "creative/talking-head-gen-usage"
+description: "Talking Head Generation Usage for OpenMontage. ``` DEFAULT MODEL: sadtalker INPUT: One face photo + one audio file → animated talking video EXPRESSION: expression_scale=1.0 (0.5 = subtle, 1.5 = expressive) STILL MODE: false (true = mouth-only animation, head stays fixed) PR"
+when_to_use: "When the agent needs guidance for: talking head generation usage for openmontage."
+---
+
 # Talking Head Generation Usage for OpenMontage
 
 > Sources: SadTalker paper (Zhang et al. 2023), MuseTalk documentation, existing Layer 2 skills

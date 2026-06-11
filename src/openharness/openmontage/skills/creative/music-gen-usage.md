@@ -1,3 +1,9 @@
+---
+name: "creative/music-gen-usage"
+description: "Music Generation Usage for OpenMontage. ``` API MODEL: music_v1 MIN DURATION: 3,000ms (3s) MAX DURATION: 600,000ms (10 min) INSTRUMENTAL: Always set force_instrumental=true for video background COST: ~$0.05 per 30 seconds KEY RULE: Music must be 18-20 dB below"
+when_to_use: "When the agent needs guidance for: music generation usage for openmontage."
+---
+
 # Music Generation Usage for OpenMontage
 
 > Sources: ElevenLabs Music API documentation, ElevenLabs best practices guide, Artlist BPM

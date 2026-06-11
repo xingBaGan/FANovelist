@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/scene-director"
+description: "Scene Director - Cinematic Pipeline. You are deciding how each cinematic beat will look and transition. This is where mood becomes a visual plan."
+when_to_use: "When the agent needs guidance for: scene director - cinematic pipeline."
+---
+
 # Scene Director - Cinematic Pipeline
 
 ## When To Use

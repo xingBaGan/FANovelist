@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -197,7 +197,7 @@ class VideoAnalyzer(BaseTool):
 
         if is_url:
             try:
-                from tools.analysis.video_downloader import VideoDownloader
+                from openharness.openmontage.tools.analysis.video_downloader import VideoDownloader
                 downloader = VideoDownloader()
 
                 if depth == "transcript_only" and self._is_youtube(platform):
@@ -262,7 +262,7 @@ class VideoAnalyzer(BaseTool):
             try:
                 from youtube_transcript_api import YouTubeTranscriptApi
 
-                from tools.analysis.transcript_fetcher import TranscriptFetcher
+                from openharness.openmontage.tools.analysis.transcript_fetcher import TranscriptFetcher
                 fetcher = TranscriptFetcher()
 
                 # Auto-detect available languages instead of hardcoding "en"
@@ -302,7 +302,7 @@ class VideoAnalyzer(BaseTool):
         # download the video to get audio for Whisper transcription
         if transcript_data is None and audio_path is None and video_path is None and is_url:
             try:
-                from tools.analysis.video_downloader import VideoDownloader
+                from openharness.openmontage.tools.analysis.video_downloader import VideoDownloader
                 downloader = VideoDownloader()
                 dl_result = downloader.execute({
                     "url": source,
@@ -326,7 +326,7 @@ class VideoAnalyzer(BaseTool):
         # Fallback: Whisper transcription on audio
         if transcript_data is None and audio_path:
             try:
-                from tools.analysis.transcriber import Transcriber
+                from openharness.openmontage.tools.analysis.transcriber import Transcriber
                 transcriber = Transcriber()
                 # Let Whisper auto-detect language instead of assuming English
                 tr_inputs = {
@@ -382,7 +382,7 @@ class VideoAnalyzer(BaseTool):
         scenes = []
         if video_path:
             try:
-                from tools.analysis.scene_detect import SceneDetect
+                from openharness.openmontage.tools.analysis.scene_detect import SceneDetect
                 detector = SceneDetect()
                 sd_result = detector.execute({
                     "input_path": video_path,
@@ -445,7 +445,7 @@ class VideoAnalyzer(BaseTool):
                 # Extract keyframes at scene boundaries + midpoints
                 timestamps = self._compute_keyframe_timestamps(scenes, max_keyframes, depth)
 
-                from tools.analysis.frame_sampler import FrameSampler
+                from openharness.openmontage.tools.analysis.frame_sampler import FrameSampler
                 sampler = FrameSampler()
                 fs_result = sampler.execute({
                     "input_path": video_path,
@@ -473,7 +473,7 @@ class VideoAnalyzer(BaseTool):
         elif video_path and not scenes:
             # No scene detection — fall back to count-based extraction
             try:
-                from tools.analysis.frame_sampler import FrameSampler
+                from openharness.openmontage.tools.analysis.frame_sampler import FrameSampler
                 sampler = FrameSampler()
                 fs_result = sampler.execute({
                     "input_path": video_path,
@@ -501,7 +501,7 @@ class VideoAnalyzer(BaseTool):
         if audio_path or video_path:
             audio_source = audio_path or video_path
             try:
-                from tools.analysis.audio_energy import AudioEnergy
+                from openharness.openmontage.tools.analysis.audio_energy import AudioEnergy
                 energy = AudioEnergy()
                 ae_result = energy.execute({
                     "input_path": audio_source,

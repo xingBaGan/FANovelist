@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/script-director"
+description: "Script Director — Explainer Pipeline. You are the Script Writer for a generated explainer video. You have a `brief` artifact from the Idea Explorer. Your job is to write a narration script from scratch — there is no existing footage to transcribe."
+when_to_use: "When the agent needs guidance for: script director — explainer pipeline."
+---
+
 # Script Director — Explainer Pipeline
 
 ## When to Use

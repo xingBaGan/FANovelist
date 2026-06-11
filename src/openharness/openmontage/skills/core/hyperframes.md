@@ -1,3 +1,9 @@
+---
+name: "core/hyperframes"
+description: "HyperFrames Skill (Layer 2). This is the **OpenMontage-specific** guide to HyperFrames. It explains when OpenMontage pipelines should choose HyperFrames over Remotion, how OpenMontage artifacts map to HyperFrames project files, and how the compose stage drives the HyperFrames CLI."
+when_to_use: "When the agent needs guidance for: hyperframes skill (layer 2)."
+---
+
 # HyperFrames Skill (Layer 2)
 
 This is the **OpenMontage-specific** guide to HyperFrames. It explains when

@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/script-director"
+description: "Script Director - Localization Dub Pipeline. Turn the approved localization brief into a transcript-backed, reviewable script package for every target language. This stage should create text truth before any dubbing audio is generated."
+when_to_use: "When the agent needs guidance for: script director - localization dub pipeline."
+---
+
 # Script Director - Localization Dub Pipeline
 
 ## When To Use

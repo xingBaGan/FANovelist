@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/proposal-director"
+description: "Proposal Director — Explainer Pipeline. You are the **Proposal Director** for a generated explainer video. You sit between the Research Director and the Script Director. You receive a `research_brief` full of raw findings and transform it into a concrete, reviewable proposal that the user approves b"
+when_to_use: "When the agent needs guidance for: proposal director — explainer pipeline."
+---
+
 # Proposal Director — Explainer Pipeline
 
 ## When to Use

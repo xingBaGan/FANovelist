@@ -58,7 +58,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -202,7 +202,7 @@ class CorpusBuilder(BaseTool):
 
     def get_status(self) -> ToolStatus:
         try:
-            from tools.video.stock_sources import all_sources, available_sources
+            from openharness.openmontage.tools.video.stock_sources import all_sources, available_sources
         except Exception:
             return ToolStatus.UNAVAILABLE
         total = len(all_sources())
@@ -216,7 +216,7 @@ class CorpusBuilder(BaseTool):
     def get_info(self) -> dict[str, Any]:
         info = super().get_info()
         try:
-            from tools.video.stock_sources import source_catalog, source_summary
+            from openharness.openmontage.tools.video.stock_sources import source_catalog, source_summary
             info["source_provider_menu"] = source_catalog()
             info["source_provider_summary"] = source_summary()
         except Exception:
@@ -239,9 +239,9 @@ class CorpusBuilder(BaseTool):
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         start = time.time()
         try:
-            from lib.corpus import Corpus
-            from tools.video.clip_cache import get_default_cache
-            from tools.video.stock_sources import (
+            from openharness.openmontage.lib.corpus import Corpus
+            from openharness.openmontage.tools.video.clip_cache import get_default_cache
+            from openharness.openmontage.tools.video.stock_sources import (
                 SearchFilters,
                 all_sources,
                 available_sources,
@@ -457,8 +457,8 @@ class CorpusBuilder(BaseTool):
         """
         import cv2
 
-        from lib.clip_embedder import embed_images, embed_texts, pool_frames
-        from lib.corpus import ClipRecord
+        from openharness.openmontage.lib.clip_embedder import embed_images, embed_texts, pool_frames
+        from openharness.openmontage.lib.corpus import ClipRecord
 
         # Pick file extension from the URL path (sources give us
         # stable .mp4/.jpg/.png URLs) with a kind-aware fallback.

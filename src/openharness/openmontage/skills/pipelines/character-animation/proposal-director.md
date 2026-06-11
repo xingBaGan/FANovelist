@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/proposal-director"
+description: "Proposal Director - Character Animation Pipeline. Present character-animation concepts that are honest about local rigged motion, reuse, cost, and runtime choice."
+when_to_use: "When the agent needs guidance for: proposal director - character animation pipeline."
+---
+
 # Proposal Director - Character Animation Pipeline
 
 ## Goal

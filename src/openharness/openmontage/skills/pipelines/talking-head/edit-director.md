@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/edit-director"
+description: "Edit Director — Talking Head Pipeline. You have a scene plan and asset manifest. Your job is to assemble the edit decision list for a talking-head video: primarily keeping the full footage with subtitle overlay and optional enhancements."
+when_to_use: "When the agent needs guidance for: edit director — talking head pipeline."
+---
+
 # Edit Director — Talking Head Pipeline
 
 ## When to Use

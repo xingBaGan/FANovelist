@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/asset-director"
+description: "Asset Director - Hybrid Pipeline. This stage prepares the support kit around the anchor edit: subtitles, diagrams, generated inserts, narration, music, and reusable overlay systems."
+when_to_use: "When the agent needs guidance for: asset director - hybrid pipeline."
+---
+
 # Asset Director - Hybrid Pipeline
 
 ## When To Use

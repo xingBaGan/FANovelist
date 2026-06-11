@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/veo-prompting"
+description: "VEO 3.1 / VEO 3 — Prompting Guide. **Word count:** VEO 3.1 sweet spot is 100–250 words; longer prompts stop helping."
+when_to_use: "When the agent needs guidance for: veo 3.1 / veo 3 — prompting guide."
+---
+
 # VEO 3.1 / VEO 3 — Prompting Guide
 
 > Source: [Vertex AI Video Gen Prompt Guide](https://cloud.google.com/vertex-ai/generative-ai/docs/video/video-gen-prompt-guide)

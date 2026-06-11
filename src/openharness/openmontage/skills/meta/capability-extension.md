@@ -1,3 +1,9 @@
+---
+name: "meta/capability-extension"
+description: "Capability Extension Protocol. When you encounter a production need that no existing tool covers. The agent can extend the system — but with guardrails. This replaces the blanket \"do NOT write ad-hoc Python scripts\" rule with a structured protocol."
+when_to_use: "When the agent needs guidance for: capability extension protocol."
+---
+
 # Capability Extension Protocol
 
 ## When to Use

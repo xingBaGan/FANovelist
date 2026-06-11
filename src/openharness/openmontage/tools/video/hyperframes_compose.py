@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -766,7 +766,7 @@ class HyperFramesCompose(BaseTool):
         """Resolve output dimensions from the media profile, with a safe default."""
         if profile_name:
             try:
-                from lib.media_profiles import get_profile  # type: ignore
+                from openharness.openmontage.lib.media_profiles import get_profile  # type: ignore
                 p = get_profile(profile_name)
                 return int(p.width), int(p.height), int(p.fps)
             except Exception:
@@ -883,7 +883,7 @@ class HyperFramesCompose(BaseTool):
         the bridge module isn't available.
         """
         try:
-            from lib.hyperframes_style_bridge import style_bridge  # type: ignore
+            from openharness.openmontage.lib.hyperframes_style_bridge import style_bridge  # type: ignore
             return style_bridge(playbook, edit_decisions)
         except Exception as e:
             log.debug("style_bridge fallback: %s", e)

@@ -1,3 +1,9 @@
+---
+name: "creative/long-form"
+description: "Long-Form Video Pipeline (10+ Minutes). ``` DURATION: 8-15 min (sweet spot for most topics) HOOK: Complete by 0:30 — survive the 30-second cliff PATTERN INTERRUPT: Every 45-90 seconds RETENTION TARGET: 40-60% average view duration CHAPTER LENGTH: 2-4 minutes per chapter NARRA"
+when_to_use: "When the agent needs guidance for: long-form video pipeline (10+ minutes)."
+---
+
 # Long-Form Video Pipeline (10+ Minutes)
 
 > Sources: YouTube Creator Academy, VidIQ analytics research, Think Media production guides,

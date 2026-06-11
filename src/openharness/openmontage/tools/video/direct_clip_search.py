@@ -39,7 +39,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -197,7 +197,7 @@ class DirectClipSearch(BaseTool):
 
     def get_status(self) -> ToolStatus:
         try:
-            from tools.video.stock_sources import available_sources
+            from openharness.openmontage.tools.video.stock_sources import available_sources
         except Exception:
             return ToolStatus.UNAVAILABLE
         if len(available_sources()) == 0:
@@ -207,7 +207,7 @@ class DirectClipSearch(BaseTool):
     def get_info(self) -> dict[str, Any]:
         info = super().get_info()
         try:
-            from tools.video.stock_sources import source_catalog, source_summary
+            from openharness.openmontage.tools.video.stock_sources import source_catalog, source_summary
             info["source_provider_menu"] = source_catalog()
             info["source_provider_summary"] = source_summary()
         except Exception:
@@ -230,7 +230,7 @@ class DirectClipSearch(BaseTool):
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         start = time.time()
         try:
-            from tools.video.stock_sources import (
+            from openharness.openmontage.tools.video.stock_sources import (
                 SearchFilters,
                 all_sources,
                 available_sources,

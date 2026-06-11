@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/compose-director"
+description: "Compose Director — Talking Head Pipeline. You have edit decisions and an asset manifest. Your job is to render the final talking-head video: apply the enhancement chain, burn subtitles, mix audio, and encode to the target profile."
+when_to_use: "When the agent needs guidance for: compose director — talking head pipeline."
+---
+
 # Compose Director — Talking Head Pipeline
 
 ## When to Use

@@ -1,3 +1,9 @@
+---
+name: "meta/animation-runtime-selector"
+description: "Animation Runtime Selector. Meta-skill that answers two questions:"
+when_to_use: "When the agent needs guidance for: animation runtime selector."
+---
+
 # Animation Runtime Selector
 
 Meta-skill that answers two questions:

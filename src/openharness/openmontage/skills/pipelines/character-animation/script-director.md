@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/script-director"
+description: "Script Director - Character Animation Pipeline. Write scripts as performable animation beats, not just narration."
+when_to_use: "When the agent needs guidance for: script director - character animation pipeline."
+---
+
 # Script Director - Character Animation Pipeline
 
 ## Goal

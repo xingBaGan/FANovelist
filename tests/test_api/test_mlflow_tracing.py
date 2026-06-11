@@ -13,9 +13,16 @@ from openharness.api.client import (
     ApiTextDeltaEvent,
     SupportsStreamingMessages,
 )
-from openharness.api.mlflow_tracing import MlflowTracingClient, wrap_api_client_if_enabled
+import json
+
+from openharness.api.mlflow_tracing import MlflowTracingClient, _message_content, wrap_api_client_if_enabled
 from openharness.api.usage import UsageSnapshot
-from openharness.engine.messages import ConversationMessage, TextBlock
+from openharness.engine.messages import (
+    ConversationMessage,
+    TextBlock,
+    ToolResultBlock,
+    ToolUseBlock,
+)
 
 
 class _StubClient:
@@ -55,7 +62,7 @@ async def test_wrap_logs_completed_stream(monkeypatch) -> None:
         logged.append(kwargs)
 
     monkeypatch.setattr(
-        "openharness.graphiti.observability.log_llm_call",
+        "openharness.api.mlflow_tracing.log_llm_call",
         _fake_log_llm_call,
     )
 
@@ -82,6 +89,36 @@ async def test_wrap_logs_completed_stream(monkeypatch) -> None:
     assert logged[0]["name"] == "agent_chat_turn"
     assert logged[0]["model"] == "test-model"
     assert logged[0]["response_content"] == "hello back"
+
+
+def test_message_content_serializes_tool_blocks() -> None:
+    message = ConversationMessage(
+        role="assistant",
+        content=[
+            ToolUseBlock(id="toolu_1", name="bash", input={"command": "ls"}),
+        ],
+    )
+    logged = _message_content(message)
+    assert json.loads(logged) == {
+        "type": "tool_use",
+        "id": "toolu_1",
+        "name": "bash",
+        "input": {"command": "ls"},
+    }
+
+    result_message = ConversationMessage(
+        role="user",
+        content=[
+            ToolResultBlock(tool_use_id="toolu_1", content="file.txt\n", is_error=False),
+        ],
+    )
+    result_logged = _message_content(result_message)
+    assert json.loads(result_logged) == {
+        "type": "tool_result",
+        "tool_use_id": "toolu_1",
+        "content": "file.txt\n",
+        "is_error": False,
+    }
 
 
 def test_wrap_disabled_returns_same_client(monkeypatch) -> None:

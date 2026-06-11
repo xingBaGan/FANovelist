@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/asset-director"
+description: "Asset Director — Talking Head Pipeline. You have a scene plan and script. Your job is to generate the supporting assets for a talking-head video: subtitles, extracted audio, overlay graphics (charts, text cards, stat reveals), and any supplementary visuals."
+when_to_use: "When the agent needs guidance for: asset director — talking head pipeline."
+---
+
 # Asset Director — Talking Head Pipeline
 
 ## When to Use

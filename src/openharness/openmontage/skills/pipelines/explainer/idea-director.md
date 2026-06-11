@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/idea-director"
+description: "Idea Director — Explainer Pipeline. You are the Idea Explorer for a generated explainer video. The user has provided a **topic or idea** (not raw footage). Your job is to research the topic, generate multiple compelling angle options, and produce a `brief` artifact that becomes the creative foundati"
+when_to_use: "When the agent needs guidance for: idea director — explainer pipeline."
+---
+
 # Idea Director — Explainer Pipeline
 
 ## When to Use

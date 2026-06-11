@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/script-director"
+description: "Script Director - Clip Factory Pipeline. This stage converts the long-form source into a ranked candidate list and then into the final clip selections. You are mining for standout moments, not summarizing the entire source."
+when_to_use: "When the agent needs guidance for: script director - clip factory pipeline."
+---
+
 # Script Director - Clip Factory Pipeline
 
 ## When To Use

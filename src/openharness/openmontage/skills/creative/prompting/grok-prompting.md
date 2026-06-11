@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/grok-prompting"
+description: "Grok Prompting. Use this when the chosen provider is `grok_image` or `grok_video`."
+when_to_use: "When the agent needs guidance for: grok prompting."
+---
+
 # Grok Prompting
 
 Use this when the chosen provider is `grok_image` or `grok_video`.

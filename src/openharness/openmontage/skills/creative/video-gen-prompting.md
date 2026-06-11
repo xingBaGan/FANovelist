@@ -1,3 +1,9 @@
+---
+name: "creative/video-gen-prompting"
+description: "Video Generation Prompting — Universal Guide. When writing prompts for the video generation family (`video_selector`, `seedance_video`, `heygen_video`, `wan_video`, `hunyuan_video`, `ltx_video_local`, `ltx_video_modal`, `cogvideo_video`). This skill covers the universal prompt vocabulary that works"
+when_to_use: "When the agent needs guidance for: video generation prompting — universal guide."
+---
+
 # Video Generation Prompting — Universal Guide
 
 ## When to Use

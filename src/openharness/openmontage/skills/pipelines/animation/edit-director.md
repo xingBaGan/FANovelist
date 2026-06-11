@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/edit-director"
+description: "Edit Director - Animation Pipeline. This stage turns the scene plan into an animatic-grade edit plan. Timing is the product."
+when_to_use: "When the agent needs guidance for: edit director - animation pipeline."
+---
+
 # Edit Director - Animation Pipeline
 
 ## When To Use

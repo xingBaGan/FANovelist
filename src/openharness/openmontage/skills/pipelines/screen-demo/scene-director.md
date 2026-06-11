@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/scene-director"
+description: "Scene Director - Screen Demo Pipeline. You are planning how the viewer's attention moves through an existing screen capture. The source video already exists; your job is to decide when to stay wide, when to crop in, and when to add minimal guidance."
+when_to_use: "When the agent needs guidance for: scene director - screen demo pipeline."
+---
+
 # Scene Director - Screen Demo Pipeline
 
 ## When To Use

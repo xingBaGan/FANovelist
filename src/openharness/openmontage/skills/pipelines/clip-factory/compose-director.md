@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/compose-director"
+description: "Compose Director - Clip Factory Pipeline. Render each clip and platform variant independently. The important behaviors here are consistency, batch resilience, and clear reporting of partial failures."
+when_to_use: "When the agent needs guidance for: compose director - clip factory pipeline."
+---
+
 # Compose Director - Clip Factory Pipeline
 
 ## When To Use

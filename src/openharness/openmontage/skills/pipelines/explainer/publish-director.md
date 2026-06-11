@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/publish-director"
+description: "Publish Director — Explainer Pipeline. You are the Publisher for a generated explainer video. You have a `render_report` with the final video file. Your job is to prepare the video for distribution: generate SEO metadata, create thumbnails, package exports, and log the publish event."
+when_to_use: "When the agent needs guidance for: publish director — explainer pipeline."
+---
+
 # Publish Director — Explainer Pipeline
 
 ## When to Use

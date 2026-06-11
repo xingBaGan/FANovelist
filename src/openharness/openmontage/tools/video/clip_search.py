@@ -37,7 +37,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -186,7 +186,7 @@ class ClipSearch(BaseTool):
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         start = time.time()
         try:
-            from lib.corpus import Corpus
+            from openharness.openmontage.lib.corpus import Corpus
 
             operation = inputs["operation"]
             corpus_dir = Path(inputs["corpus_dir"])
@@ -279,7 +279,7 @@ def _op_rank_for_slot(corp, inputs: dict[str, Any]) -> dict[str, Any]:
     can decide whether the match is strong enough (>= 0.25 is a rough
     "acceptable" threshold for CLIP ViT-B/32).
     """
-    from lib.clip_embedder import embed_texts
+    from openharness.openmontage.lib.clip_embedder import embed_texts
 
     query_text = inputs.get("query_text", "").strip()
     if not query_text:

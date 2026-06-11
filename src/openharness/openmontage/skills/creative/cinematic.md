@@ -1,3 +1,9 @@
+---
+name: "creative/cinematic"
+description: "Cinematic Video Pipeline. ``` ASPECT RATIO: 2.39:1 (widescreen cinematic) or 16:9 with letterbox LETTERBOX: Black bars at top/bottom — 1920x800 active area in 1920x1080 frame FRAME RATE: 24fps (cinematic standard) SHOT DURATION: 4-8 seconds average (longer than explainer, shorter"
+when_to_use: "When the agent needs guidance for: cinematic video pipeline."
+---
+
 # Cinematic Video Pipeline
 
 > Sources: No Film School editorial guides, StudioBinder filmmaking resources, Film Riot

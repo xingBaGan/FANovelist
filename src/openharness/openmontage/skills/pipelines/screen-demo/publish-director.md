@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/publish-director"
+description: "Publish Director - Screen Demo Pipeline. Package the finished demo so the user can publish it quickly and so the metadata reflects the actual task, result, and tools involved."
+when_to_use: "When the agent needs guidance for: publish director - screen demo pipeline."
+---
+
 # Publish Director - Screen Demo Pipeline
 
 ## When To Use

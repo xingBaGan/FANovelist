@@ -18,8 +18,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.analysis.audio_probe import probe_duration
-from tools.base_tool import (
+from openharness.openmontage.tools.analysis.audio_probe import probe_duration
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,

@@ -1,3 +1,9 @@
+---
+name: "creative/broll-planning"
+description: "B-Roll Planning for OpenMontage. You are planning visual assets for a video and need supplementary footage (B-roll) to accompany narration, establish context, or add visual variety. This skill teaches you when to reach for stock footage vs. AI generation, and how to get good results from each."
+when_to_use: "When the agent needs guidance for: b-roll planning for openmontage."
+---
+
 # B-Roll Planning for OpenMontage
 
 > How to plan B-roll needs from a script, decide between stock and generated footage,

@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/asset-director"
+description: "Asset Director - Animation Pipeline. This stage prepares the actual animated ingredients: narration, diagrams, math renders, motion backgrounds, code visuals, and reusable type or layout systems."
+when_to_use: "When the agent needs guidance for: asset director - animation pipeline."
+---
+
 # Asset Director - Animation Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "meta/video-reference-analyst"
+description: "Video Reference Analyst — Meta Skill. When the user provides a video URL (YouTube, Shorts, Instagram, TikTok, or any URL) or a local video file as a REFERENCE — meaning \"make me something like this,\" not \"edit this footage.\""
+when_to_use: "When the agent needs guidance for: video reference analyst — meta skill."
+---
+
 # Video Reference Analyst — Meta Skill
 
 ## When to Use

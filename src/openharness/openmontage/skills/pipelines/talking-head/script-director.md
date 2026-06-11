@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/script-director"
+description: "Script Director — Talking Head Pipeline. You have a brief and raw talking-head footage. Your job is to transcribe the footage and structure it into a script artifact with timestamped sections."
+when_to_use: "When the agent needs guidance for: script director — talking head pipeline."
+---
+
 # Script Director — Talking Head Pipeline
 
 ## When to Use

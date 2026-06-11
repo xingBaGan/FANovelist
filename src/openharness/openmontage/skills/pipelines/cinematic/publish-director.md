@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/publish-director"
+description: "Publish Director - Cinematic Pipeline. Package the cinematic piece and any cutdowns so the hero version stays clear and the distribution intent is obvious."
+when_to_use: "When the agent needs guidance for: publish director - cinematic pipeline."
+---
+
 # Publish Director - Cinematic Pipeline
 
 ## When To Use

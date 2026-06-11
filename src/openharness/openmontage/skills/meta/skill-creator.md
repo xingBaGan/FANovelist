@@ -1,3 +1,9 @@
+---
+name: "meta/skill-creator"
+description: "Skill Creator — Meta Skill. When you encounter a situation where no existing skill covers what you need to do, and the gap is reusable — not a one-off task. This skill teaches you to create new skills dynamically during a pipeline run."
+when_to_use: "When the agent needs guidance for: skill creator — meta skill."
+---
+
 # Skill Creator — Meta Skill
 
 ## When to Use

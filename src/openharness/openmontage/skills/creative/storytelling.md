@@ -1,3 +1,9 @@
+---
+name: "creative/storytelling"
+description: "Storytelling & Narrative Structure for Explainer Videos. For a **3-minute explainer video** (scale proportionally for other lengths):"
+when_to_use: "When the agent needs guidance for: storytelling & narrative structure for explainer videos."
+---
+
 # Storytelling & Narrative Structure for Explainer Videos
 
 > Sources: YouTube Creator Academy, Derek Muller PhD thesis (U. Sydney 2008), Kurzgesagt production

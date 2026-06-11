@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/scene-director"
+description: "Scene Director - Podcast Repurpose Pipeline. You are deciding how each podcast deliverable should look based on the actual source mode. This is where you prevent \"fake richness\" and choose honest, effective treatments."
+when_to_use: "When the agent needs guidance for: scene director - podcast repurpose pipeline."
+---
+
 # Scene Director - Podcast Repurpose Pipeline
 
 ## When To Use

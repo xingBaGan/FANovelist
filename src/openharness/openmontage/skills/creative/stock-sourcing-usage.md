@@ -1,3 +1,9 @@
+---
+name: "creative/stock-sourcing-usage"
+description: "Stock Sourcing Usage for OpenMontage. - Need **high-quality photography** (curated, professional) - Need **video** (larger video library than Pixabay) - Want **orientation filtering** (landscape/portrait/square) - Want **color filtering** (match playbook palette) - Need results in **multiple languag"
+when_to_use: "When the agent needs guidance for: stock sourcing usage for openmontage."
+---
+
 # Stock Sourcing Usage for OpenMontage
 
 > How to use the stock image and video tools effectively — query construction,

@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/edit-director"
+description: "Edit Director — Explainer Pipeline. You are the Editor for a generated explainer video. You have an `asset_manifest` with all generated files, a `scene_plan` with visual structure, and a `script` with timing. Your job is to assemble the edit decision list (EDL): what plays when, how elements layer,"
+when_to_use: "When the agent needs guidance for: edit director — explainer pipeline."
+---
+
 # Edit Director — Explainer Pipeline
 
 ## When to Use

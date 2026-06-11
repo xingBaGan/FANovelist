@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -413,7 +413,7 @@ class VideoStitch(BaseTool):
         profile_name = inputs.get("profile")
         if profile_name:
             try:
-                from lib.media_profiles import get_profile
+                from openharness.openmontage.lib.media_profiles import get_profile
                 profile = get_profile(profile_name)
                 return (profile.width, profile.height, profile.fps, profile.codec, profile.audio_codec)
             except (ImportError, ValueError):

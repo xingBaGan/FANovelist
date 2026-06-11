@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/script-director"
+description: "Script Director - Screen Demo Pipeline. You are turning the inspected recording into a timestamped procedural script. Unlike explainer work, you are not inventing the flow. You are synchronizing language to actions the viewer will literally see."
+when_to_use: "When the agent needs guidance for: script director - screen demo pipeline."
+---
+
 # Script Director - Screen Demo Pipeline
 
 ## When To Use

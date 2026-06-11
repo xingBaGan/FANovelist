@@ -1,3 +1,9 @@
+---
+name: "creative/upscale-usage"
+description: "Upscaling Usage for OpenMontage. ``` DEFAULT MODEL: RealESRGAN_x4plus — real-world photos and video frames DEFAULT SCALE: 4x (480p→1080p, 720p→4K) ANIME MODEL: RealESRGAN_x4plus_anime_6B — flat color areas, illustrations FACE ENHANCE: Enable face_enhance for footage with people (uses GF"
+when_to_use: "When the agent needs guidance for: upscaling usage for openmontage."
+---
+
 # Upscaling Usage for OpenMontage
 
 > Sources: Real-ESRGAN documentation, GFPGAN face enhancement docs, Real-ESRGAN paper

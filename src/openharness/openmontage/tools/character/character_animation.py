@@ -15,8 +15,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from schemas.artifacts import validate_artifact
-from tools.base_tool import (
+from openharness.openmontage.schemas.artifacts import validate_artifact
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,

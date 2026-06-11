@@ -16,7 +16,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
-from lib.config_model import BudgetMode
+from openharness.openmontage.lib.config_model import BudgetMode
 
 
 class EntryStatus(str, Enum):

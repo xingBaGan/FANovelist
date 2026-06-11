@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -122,7 +122,7 @@ class OpenAITTS(BaseTool):
     def _generate(self, inputs: dict[str, Any]) -> ToolResult:
         from openai import OpenAI
 
-        from tools.analysis.audio_probe import probe_duration
+        from openharness.openmontage.tools.analysis.audio_probe import probe_duration
 
         client = OpenAI()
         text = inputs["text"]

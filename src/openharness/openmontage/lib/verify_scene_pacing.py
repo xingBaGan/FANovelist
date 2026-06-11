@@ -2,7 +2,7 @@
 
 Use from any build_composition.py or synthetic-UI builder:
 
-    from lib.verify_scene_pacing import trace, assert_alignment
+    from openharness.openmontage.lib.verify_scene_pacing import trace, assert_alignment
 
     trace(install_steps, scene_start=50.0)
     assert_alignment(

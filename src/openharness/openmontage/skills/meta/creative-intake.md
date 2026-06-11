@@ -1,3 +1,9 @@
+---
+name: "meta/creative-intake"
+description: "Creative Intake. Before the research stage, gather user intent through targeted questions. Do NOT start production on a vague brief."
+when_to_use: "When the agent needs guidance for: creative intake."
+---
+
 # Creative Intake
 
 Before the research stage, gather user intent through targeted questions.

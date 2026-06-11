@@ -26,9 +26,22 @@ def _load_dotenv() -> None:
     This ensures API keys are available before any tool is instantiated,
     even when tools are imported directly without going through the registry.
     Only sets variables that are not already in the environment.
+
+    Search order:
+    1. ``$OPENMONTAGE_ENV_FILE`` if set
+    2. OpenHarness repo root (``src/openharness/openmontage`` -> three parents up)
+    3. OpenMontage subpackage root (legacy location, for standalone use)
     """
-    env_path = Path(__file__).resolve().parent.parent / ".env"
-    if not env_path.is_file():
+    candidates: list[Path] = []
+    override = os.environ.get("OPENMONTAGE_ENV_FILE")
+    if override:
+        candidates.append(Path(override))
+    pkg_root = Path(__file__).resolve().parent.parent
+    candidates.append(pkg_root.parent.parent.parent / ".env")
+    candidates.append(pkg_root / ".env")
+
+    env_path: Optional[Path] = next((p for p in candidates if p.is_file()), None)
+    if env_path is None:
         return
     with open(env_path, encoding="utf-8", errors="ignore") as f:
         for line in f:

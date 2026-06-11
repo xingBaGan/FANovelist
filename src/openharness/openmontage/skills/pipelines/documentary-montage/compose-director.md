@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/compose-director"
+description: "Compose Director - Documentary Montage Pipeline. The timeline exists. Every cut has an in/out, transitions are chosen, the music bed is locked. You now have to render the piece and apply the register-smoothing pass (uniform crop + LUT + audio mix) that makes a mixed-era corpus feel like one film."
+when_to_use: "When the agent needs guidance for: compose director - documentary montage pipeline."
+---
+
 # Compose Director - Documentary Montage Pipeline
 
 ## When To Use

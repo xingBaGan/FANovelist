@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,

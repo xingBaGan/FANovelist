@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/hunyuan-prompting"
+description: "HunyuanVideo 1.5 — Prompting Guide. **Word count:** Hunyuan 1.5 reads well at 80–200 words; doesn't reward 400-word essays."
+when_to_use: "When the agent needs guidance for: hunyuanvideo 1.5 — prompting guide."
+---
+
 # HunyuanVideo 1.5 — Prompting Guide
 
 > Source: [Tencent Prompt Handbook](https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5/blob/main/assets/HunyuanVideo_1_5_Prompt_Handbook_EN.md)

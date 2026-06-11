@@ -1,3 +1,9 @@
+---
+name: "creative/face-restore-usage"
+description: "Face Restoration Usage for OpenMontage. ``` DEFAULT MODEL: CodeFormer with fidelity 0.5 ALTERNATIVE: GFPGAN (faster, less controllable) FIDELITY RANGE: 0 = max quality enhancement, 1 = max faithfulness to input BG UPSAMPLER: Enable to also upscale the background (Real-ESRGAN) PROCESSIN"
+when_to_use: "When the agent needs guidance for: face restoration usage for openmontage."
+---
+
 # Face Restoration Usage for OpenMontage
 
 > Sources: CodeFormer paper (Zhou et al. 2022), GFPGAN documentation, Real-ESRGAN upsampling docs,

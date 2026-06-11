@@ -1,3 +1,9 @@
+---
+name: "creative/data-visualization"
+description: "Data Visualization Strategy Skill. Apply this skill when a scene requires presenting data visually: statistics, comparisons, trends, compositions, or key metrics. This skill guides chart type selection, animation sequencing, label placement, data density, and color usage to produce charts that are c"
+when_to_use: "When the agent needs guidance for: data visualization strategy skill."
+---
+
 # Data Visualization Strategy Skill
 
 ## When to Use

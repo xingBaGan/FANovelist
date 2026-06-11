@@ -1,3 +1,9 @@
+---
+name: "creative/lip-sync-usage"
+description: "Lip Sync Usage for OpenMontage. ``` DEFAULT MODEL: wav2lip (faster, good sync accuracy) HIGHER QUALITY: wav2lip_gan (better visual quality, slower) FACE PADDING: [0, 10, 0, 0] (top, bottom, left, right) INPUT: Video with visible face + audio to sync to RESIZE FACTOR: 1 = full"
+when_to_use: "When the agent needs guidance for: lip sync usage for openmontage."
+---
+
 # Lip Sync Usage for OpenMontage
 
 > Sources: Wav2Lip paper (Prajwal et al. 2020), Wav2Lip-GAN documentation, OpenMontage

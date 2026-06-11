@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/sora-prompting"
+description: "Sora 2 — Prompting Guide. **Word count:** Sora 2 plateaus around 100–250 words. Past 250, additional detail rarely improves output."
+when_to_use: "When the agent needs guidance for: sora 2 — prompting guide."
+---
+
 # Sora 2 — Prompting Guide
 
 > Source: [OpenAI Sora 2 Cookbook](https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide)

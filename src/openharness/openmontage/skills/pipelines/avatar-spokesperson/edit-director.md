@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/edit-director"
+description: "Edit Director - Avatar Spokesperson Pipeline. Turn the planned presenter scenes and produced assets into a coherent spokesperson timeline. The quality bar is steady delivery, readable support layers, and a clear CTA landing."
+when_to_use: "When the agent needs guidance for: edit director - avatar spokesperson pipeline."
+---
+
 # Edit Director - Avatar Spokesperson Pipeline
 
 ## When To Use

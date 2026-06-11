@@ -1,3 +1,9 @@
+---
+name: "creative/video-editing"
+description: "Video Editing Skill. Apply this skill when making editorial decisions for talking-head content: where to cut, what to remove, how to pace, and how to structure the final edit."
+when_to_use: "When the agent needs guidance for: video editing skill."
+---
+
 # Video Editing Skill
 
 ## When to Use

@@ -1,3 +1,9 @@
+---
+name: "core/ffmpeg"
+description: "FFmpeg Skill. Use FFmpeg-backed tools for any video/audio processing that does not require AI inference: cutting, trimming, speed adjustment, concatenation, audio extraction, mixing, subtitle burn-in, overlay compositing, encoding, face enhancement, color grading, and audio cleanup."
+when_to_use: "When the agent needs guidance for: ffmpeg skill."
+---
+
 # FFmpeg Skill
 
 ## When to Use

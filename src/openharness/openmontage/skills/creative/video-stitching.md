@@ -1,3 +1,9 @@
+---
+name: "creative/video-stitching"
+description: "Video Stitching Strategy Skill. Apply this skill when assembling multiple video clips into a unified output: sequential narrative assembly, multi-take compilation, AI-generated clip chaining (e.g., LTX-2 produces max ~8s per clip), or spatial compositions like side-by-side comparisons and picture-in"
+when_to_use: "When the agent needs guidance for: video stitching strategy skill."
+---
+
 # Video Stitching Strategy Skill
 
 ## When to Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/research-director"
+description: "Research Director — Animation Pipeline. You are the **Research Director** for a generated animation video. You are the first stage in the pipeline — before any creative decisions, before any script, before any money is spent. Your job is to **deeply research the topic AND the animation approach** us"
+when_to_use: "When the agent needs guidance for: research director — animation pipeline."
+---
+
 # Research Director — Animation Pipeline
 
 ## When to Use

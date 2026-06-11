@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/executive-producer"
+description: "Executive Producer — Podcast Repurpose Pipeline. You are the **Executive Producer (EP)** for a podcast repurpose project. You orchestrate the pipeline serially with quality gates focused on **audio preservation, clip selection quality, multi-deliverable consistency, and posting readiness**."
+when_to_use: "When the agent needs guidance for: executive producer — podcast repurpose pipeline."
+---
+
 # Executive Producer — Podcast Repurpose Pipeline
 
 ## When to Use

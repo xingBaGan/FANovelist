@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/edit-director"
+description: "Edit Director - Clip Factory Pipeline. This stage turns the approved clips into independent mini-edits. Each clip must work alone, but the collection should still feel like a coherent series."
+when_to_use: "When the agent needs guidance for: edit director - clip factory pipeline."
+---
+
 # Edit Director - Clip Factory Pipeline
 
 ## When To Use

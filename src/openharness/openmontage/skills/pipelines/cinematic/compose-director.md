@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/compose-director"
+description: "Compose Director - Cinematic Pipeline. Render the cinematic piece with careful attention to grade, audio dynamics, and frame treatment. This is not a generic export step."
+when_to_use: "When the agent needs guidance for: compose director - cinematic pipeline."
+---
+
 # Compose Director - Cinematic Pipeline
 
 ## When To Use

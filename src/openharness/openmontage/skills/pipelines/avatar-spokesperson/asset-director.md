@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/asset-director"
+description: "Asset Director - Avatar Spokesperson Pipeline. This stage prepares the actual spokesperson ingredients: narration, avatar or lip-sync footage, subtitle assets, branded backgrounds, and the minimal support graphics needed to complete the cut."
+when_to_use: "When the agent needs guidance for: asset director - avatar spokesperson pipeline."
+---
+
 # Asset Director - Avatar Spokesperson Pipeline
 
 ## When To Use

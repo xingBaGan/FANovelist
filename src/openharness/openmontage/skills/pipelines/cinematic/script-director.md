@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/script-director"
+description: "Script Director - Cinematic Pipeline. This stage builds the beat map, selected lines, title-card copy, and reveal structure for the cinematic piece. You are shaping rhythm, not writing a dense explainer."
+when_to_use: "When the agent needs guidance for: script director - cinematic pipeline."
+---
+
 # Script Director - Cinematic Pipeline
 
 ## When To Use

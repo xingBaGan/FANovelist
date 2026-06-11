@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/asset-director"
+description: "Asset Director - Documentary Montage Pipeline. The shot list exists. You now have to actually go out and find the clips that fill each slot. There are two paths:"
+when_to_use: "When the agent needs guidance for: asset director - documentary montage pipeline."
+---
+
 # Asset Director - Documentary Montage Pipeline
 
 ## When To Use

@@ -45,6 +45,7 @@ import { TerminalScene } from "./components/TerminalScene";
 import type { TerminalStep } from "./components/TerminalScene";
 import { ScreenshotScene } from "./components/ScreenshotScene";
 import type { ScreenshotStep } from "./components/ScreenshotScene";
+import { ClassroomExperimentScene } from "./components/ClassroomExperimentScene";
 import { ProviderChip } from "./components/ProviderChip";
 import type { ParticleType } from "./components/ParticleOverlay";
 import { resolveTheme, type ThemeConfig, DEFAULT_THEME } from "./Root";
@@ -268,6 +269,9 @@ interface Cut {
   screenshotSteps?: ScreenshotStep[];
   screenshotSize?: { width: number; height: number };
   cursorStartAt?: [number, number];
+  // Classroom experiment scene props (type: "classroom_experiment")
+  experimentVariant?: "question" | "setup" | "morning" | "evening" | "rule";
+  note?: string;
 }
 
 interface Overlay {
@@ -616,6 +620,19 @@ const SceneRenderer: React.FC<{ cut: Cut; theme: ThemeConfig }> = ({ cut, theme 
         steps={cut.screenshotSteps as ScreenshotStep[]}
         accentColor={accent}
         cursorStartAt={cut.cursorStartAt}
+      />
+    );
+  }
+  if (cut.type === "classroom_experiment") {
+    return maybeWrapWithBg(
+      <ClassroomExperimentScene
+        variant={cut.experimentVariant}
+        title={cut.title || cut.text}
+        subtitle={cut.subtitle}
+        note={cut.note}
+        backgroundColor={cut.backgroundColor || theme.backgroundColor}
+        accentColor={accent}
+        textColor={textColor}
       />
     );
   }

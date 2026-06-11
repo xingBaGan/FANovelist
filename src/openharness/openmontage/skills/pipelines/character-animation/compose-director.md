@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/compose-director"
+description: "Compose Director - Character Animation Pipeline. Render the approved character animation and prove it was reviewed."
+when_to_use: "When the agent needs guidance for: compose director - character animation pipeline."
+---
+
 # Compose Director - Character Animation Pipeline
 
 ## Goal

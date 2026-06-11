@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/compose-director"
+description: "Compose Director — Explainer Pipeline. You are the Compositor for a generated explainer video. You have `edit_decisions` with the complete edit timeline and an `asset_manifest` with all file paths. Your job is to render the final video: assemble visuals, layer audio, burn subtitles, and encode to th"
+when_to_use: "When the agent needs guidance for: compose director — explainer pipeline."
+---
+
 # Compose Director — Explainer Pipeline
 
 ## When to Use

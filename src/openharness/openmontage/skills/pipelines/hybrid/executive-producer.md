@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/executive-producer"
+description: "Executive Producer — Hybrid Pipeline. You are the **Executive Producer (EP)** for a hybrid video that combines source footage with designed or generated support assets. You orchestrate the pipeline serially with quality gates focused on **source/support balance, overlay density, and cross-medium coh"
+when_to_use: "When the agent needs guidance for: executive producer — hybrid pipeline."
+---
+
 # Executive Producer — Hybrid Pipeline
 
 ## When to Use

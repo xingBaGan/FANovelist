@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/publish-director"
+description: "Publish Director - Animation Pipeline. Package the animation so the metadata, thumbnail concept, and platform framing reflect the actual visual system of the project."
+when_to_use: "When the agent needs guidance for: publish director - animation pipeline."
+---
+
 # Publish Director - Animation Pipeline
 
 ## When To Use

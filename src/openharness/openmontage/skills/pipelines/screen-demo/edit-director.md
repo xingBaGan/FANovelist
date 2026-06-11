@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/edit-director"
+description: "Edit Director - Screen Demo Pipeline. This stage turns the plan into a concrete, schema-valid edit: trims, speeds, overlays, subtitles, and transitions. Keep the edit simple enough to execute with the current tooling and explicit enough that composition is predictable."
+when_to_use: "When the agent needs guidance for: edit director - screen demo pipeline."
+---
+
 # Edit Director - Screen Demo Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "creative/diagram-gen-usage"
+description: "Diagram Generation Usage for OpenMontage. ``` MAX NODES (1080p): 15-20 nodes, 20-25 edges MAX NODES (4K): 25-35 nodes, 35-45 edges MAX NODES (vert): 10-12 nodes, 12-15 edges MIN FONT SIZE: 16px at 1080p, 14px at 4K RENDER WIDTH: Minimum 1200px RENDER VIEWPORT: 3840x2160 (4K) for"
+when_to_use: "When the agent needs guidance for: diagram generation usage for openmontage."
+---
+
 # Diagram Generation Usage for OpenMontage
 
 > Sources: Mermaid.js documentation, existing Layer 3 skill at `.agents/skills/beautiful-mermaid/`,

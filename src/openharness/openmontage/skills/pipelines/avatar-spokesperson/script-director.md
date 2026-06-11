@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/script-director"
+description: "Script Director - Avatar Spokesperson Pipeline. Turn the approved brief into scene-safe spoken copy for an avatar presenter. The quality bar is not literary flourish. It is spoken clarity, believable pacing, and one clean point per scene."
+when_to_use: "When the agent needs guidance for: script director - avatar spokesperson pipeline."
+---
+
 # Script Director - Avatar Spokesperson Pipeline
 
 ## When To Use

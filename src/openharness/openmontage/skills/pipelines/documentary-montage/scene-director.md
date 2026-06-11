@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/scene-director"
+description: "Scene Director - Documentary Montage Pipeline. The brief exists. You now have to turn a thematic question into a concrete list of SLOTS the retrieval layer can fill. Each slot is an intention (\"a silhouette at a doorway at dusk\") plus the queries that will find it in the real world (Pexels/Archive.o"
+when_to_use: "When the agent needs guidance for: scene director - documentary montage pipeline."
+---
+
 # Scene Director - Documentary Montage Pipeline
 
 ## When To Use

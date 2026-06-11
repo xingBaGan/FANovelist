@@ -29,7 +29,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -231,7 +231,7 @@ class VideoCompose(BaseTool):
         one place (node 22 floor, ffmpeg + npx on PATH).
         """
         try:
-            from tools.video.hyperframes_compose import HyperFramesCompose
+            from openharness.openmontage.tools.video.hyperframes_compose import HyperFramesCompose
             return bool(HyperFramesCompose()._runtime_check()["runtime_available"])
         except Exception:
             return False
@@ -387,7 +387,7 @@ class VideoCompose(BaseTool):
         resolution = "1920x1080"
         if profile_name:
             try:
-                from lib.media_profiles import get_profile
+                from openharness.openmontage.lib.media_profiles import get_profile
                 p = get_profile(profile_name)
                 resolution = f"{p.width}x{p.height}"
             except (ImportError, ValueError):
@@ -578,7 +578,7 @@ class VideoCompose(BaseTool):
             profile_flags: list[str] = []
             if profile_name:
                 try:
-                    from lib.media_profiles import get_profile
+                    from openharness.openmontage.lib.media_profiles import get_profile
                     p = get_profile(profile_name)
                     profile_flags = ["-s", f"{p.width}x{p.height}", "-r", str(p.fps)]
                 except (ImportError, ValueError):
@@ -688,7 +688,7 @@ class VideoCompose(BaseTool):
         playbook: dict[str, Any] = {}
         if playbook_name:
             try:
-                from styles.playbook_loader import load_playbook
+                from openharness.openmontage.styles.playbook_loader import load_playbook
                 playbook = load_playbook(playbook_name)
             except Exception:
                 pass
@@ -841,7 +841,7 @@ class VideoCompose(BaseTool):
 
         if delivery_data:
             try:
-                from lib.delivery_promise import DeliveryPromise
+                from openharness.openmontage.lib.delivery_promise import DeliveryPromise
                 promise = DeliveryPromise.from_dict(delivery_data)
                 result = promise.validate_cuts(resolved_cuts)
                 if not result["valid"]:
@@ -873,7 +873,7 @@ class VideoCompose(BaseTool):
 
         if scenes:
             try:
-                from lib.slideshow_risk import score_slideshow_risk
+                from openharness.openmontage.lib.slideshow_risk import score_slideshow_risk
                 render_runtime = edit_decisions.get("render_runtime")
                 risk = score_slideshow_risk(
                     scenes, edit_decisions, renderer_family, render_runtime
@@ -1129,7 +1129,7 @@ class VideoCompose(BaseTool):
             )
 
         try:
-            from tools.video.hyperframes_compose import HyperFramesCompose
+            from openharness.openmontage.tools.video.hyperframes_compose import HyperFramesCompose
         except Exception as e:
             return ToolResult(
                 success=False,
@@ -1150,7 +1150,7 @@ class VideoCompose(BaseTool):
             )
             if playbook_name:
                 try:
-                    from styles.playbook_loader import load_playbook  # type: ignore
+                    from openharness.openmontage.styles.playbook_loader import load_playbook  # type: ignore
                     playbook_data = load_playbook(playbook_name)
                 except Exception:
                     playbook_data = None
@@ -1359,7 +1359,7 @@ class VideoCompose(BaseTool):
         profile_name = inputs.get("profile")
         if profile_name:
             try:
-                from lib.media_profiles import get_profile
+                from openharness.openmontage.lib.media_profiles import get_profile
                 p = get_profile(profile_name)
                 cmd.extend(["--width", str(p.width), "--height", str(p.height)])
             except (ImportError, ValueError):
@@ -1822,7 +1822,7 @@ class VideoCompose(BaseTool):
             )
             if delivery_data:
                 try:
-                    from lib.delivery_promise import DeliveryPromise
+                    from openharness.openmontage.lib.delivery_promise import DeliveryPromise
                     promise = DeliveryPromise.from_dict(delivery_data)
                     cuts = edit_decisions.get("cuts", [])
                     result = promise.validate_cuts(cuts)
@@ -2093,7 +2093,7 @@ class VideoCompose(BaseTool):
         # Apply media profile if specified
         if profile_name:
             try:
-                from lib.media_profiles import get_profile, ffmpeg_output_args
+                from openharness.openmontage.lib.media_profiles import get_profile, ffmpeg_output_args
                 profile = get_profile(profile_name)
                 cmd.extend(["-s", f"{profile.width}x{profile.height}"])
                 cmd.extend(["-r", str(profile.fps)])

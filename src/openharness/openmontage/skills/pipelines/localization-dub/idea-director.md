@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/idea-director"
+description: "Idea Director - Localization Dub Pipeline. Use this pipeline when the user has a source video and wants translated deliverables: subtitles, dubbed audio, or localized videos in one or more target languages."
+when_to_use: "When the agent needs guidance for: idea director - localization dub pipeline."
+---
+
 # Idea Director - Localization Dub Pipeline
 
 ## When To Use

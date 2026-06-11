@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/asset-director"
+description: "Asset Director - Character Animation Pipeline. Produce `asset_manifest` with character parts, backgrounds, props, audio, music, and preview artifacts."
+when_to_use: "When the agent needs guidance for: asset director - character animation pipeline."
+---
+
 # Asset Director - Character Animation Pipeline
 
 ## Goal

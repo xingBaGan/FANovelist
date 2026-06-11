@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/scene-director"
+description: "Scene Director - Animation Pipeline. You are converting the script into a feasible animation plan. This is the stage that decides whether the project feels designed or chaotic."
+when_to_use: "When the agent needs guidance for: scene director - animation pipeline."
+---
+
 # Scene Director - Animation Pipeline
 
 ## When To Use

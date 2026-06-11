@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/idea-director"
+description: "Idea Director - Podcast Repurpose Pipeline. Use this pipeline when the source is a podcast episode, either audio-only or video podcast, and the user wants clips, social assets, or a companion long-form video treatment."
+when_to_use: "When the agent needs guidance for: idea director - podcast repurpose pipeline."
+---
+
 # Idea Director - Podcast Repurpose Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/publish-director"
+description: "Publish Director - Localization Dub Pipeline. Package the completed localization outputs so downstream teams can find the right video, subtitle, and metadata bundle for each language without manual cleanup."
+when_to_use: "When the agent needs guidance for: publish director - localization dub pipeline."
+---
+
 # Publish Director - Localization Dub Pipeline
 
 ## When To Use

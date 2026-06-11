@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/publish-director"
+description: "Publish Director - Avatar Spokesperson Pipeline. Package the finished spokesperson outputs for delivery. This stage should make it obvious which file is the hero cut, which are derivatives, and what message or audience each version serves."
+when_to_use: "When the agent needs guidance for: publish director - avatar spokesperson pipeline."
+---
+
 # Publish Director - Avatar Spokesperson Pipeline
 
 ## When To Use

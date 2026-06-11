@@ -12,7 +12,7 @@ import pkgutil
 from types import ModuleType
 from typing import Any, Optional
 
-from tools.base_tool import BaseTool, ToolStatus, ToolTier, ToolStability
+from openharness.openmontage.tools.base_tool import BaseTool, ToolStatus, ToolTier, ToolStability
 
 
 # Unicode punctuation that breaks on Windows cp1252 stdout. Map each to an
@@ -85,24 +85,14 @@ class ToolRegistry:
 
     @staticmethod
     def _load_dotenv() -> None:
-        """Load .env file into os.environ if present, so tools can find API keys."""
-        from pathlib import Path
-        import os
-        env_path = Path(__file__).resolve().parent.parent / ".env"
-        if not env_path.is_file():
-            return
-        with open(env_path, encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, _, value = line.partition("=")
-                key = key.strip()
-                value = value.strip().strip("'\"")
-                if key and key not in os.environ:
-                    os.environ[key] = value
+        """Load .env file into os.environ if present, so tools can find API keys.
 
-    def discover(self, package_name: str = "tools") -> list[str]:
+        Delegates to ``base_tool._load_dotenv`` so the search order stays
+        in one place; importing :mod:`base_tool` is enough to trigger it.
+        """
+        from openharness.openmontage.tools import base_tool as _bt  # noqa: F401
+
+    def discover(self, package_name: str = "openharness.openmontage.tools") -> list[str]:
         """Import a package tree and register any concrete tools it defines."""
         self._load_dotenv()
         package = importlib.import_module(package_name)
@@ -120,7 +110,7 @@ class ToolRegistry:
         self._discovered_packages.add(package_name)
         return discovered
 
-    def ensure_discovered(self, package_name: str = "tools") -> None:
+    def ensure_discovered(self, package_name: str = "openharness.openmontage.tools") -> None:
         """Load tool modules once before reporting capabilities."""
         if package_name not in self._discovered_packages:
             self.discover(package_name)

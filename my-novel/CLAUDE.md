@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 # Novel project — OpenHarness coordinator SOP
 
 Copy this file to your novel project root as `CLAUDE.md`.

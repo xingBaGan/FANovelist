@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/compose-director"
+description: "Compose Director - Screen Demo Pipeline. Render the final screen-demo outputs. The quality bar is simple: the UI must be readable, the pacing must feel intentional, and the result must match the planned platform shapes."
+when_to_use: "When the agent needs guidance for: compose director - screen demo pipeline."
+---
+
 # Compose Director - Screen Demo Pipeline
 
 ## When To Use

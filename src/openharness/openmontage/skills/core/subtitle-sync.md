@@ -1,3 +1,9 @@
+---
+name: "core/subtitle-sync"
+description: "Subtitle Sync Skill. Use the `subtitle_gen` tool to convert transcript data (from `transcriber`) into properly timed subtitle files. This skill covers timing strategy, formatting, and readability for both vertical and horizontal video."
+when_to_use: "When the agent needs guidance for: subtitle sync skill."
+---
+
 # Subtitle Sync Skill
 
 ## When to Use

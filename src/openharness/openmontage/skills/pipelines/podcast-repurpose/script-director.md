@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/script-director"
+description: "Script Director - Podcast Repurpose Pipeline. This stage creates the transcript truth, speaker attribution, highlight set, and chapter structure that every later stage depends on."
+when_to_use: "When the agent needs guidance for: script director - podcast repurpose pipeline."
+---
+
 # Script Director - Podcast Repurpose Pipeline
 
 ## When To Use

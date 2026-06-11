@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/executive-producer"
+description: "Executive Producer - Documentary Montage Pipeline. The user wants a short (30-180s) non-narrative piece built from existing footage — a thematic collage, essay film, or Adam-Curtis-style tone poem. The piece is NOT a narrated explainer, NOT a talking head, NOT a single extended scene. It is an arran"
+when_to_use: "When the agent needs guidance for: executive producer - documentary montage pipeline."
+---
+
 # Executive Producer - Documentary Montage Pipeline
 
 ## When To Use

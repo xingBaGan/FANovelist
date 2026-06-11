@@ -1,3 +1,9 @@
+---
+name: "creative/sound-design"
+description: "Sound Design for Video Production. ``` DIALOGUE: -12 dB peak | -16 to -14 LUFS integrated MUSIC BED: -30 to -20 dB (18-20 dB below dialogue) SFX: -18 to -12 dB (6 dB below dialogue minimum) WHOOSH TIMING: Start 10-20ms before visual, duration 400-500ms MUSIC BPM: Calm 6"
+when_to_use: "When the agent needs guidance for: sound design for video production."
+---
+
 # Sound Design for Video Production
 
 > Sources: W3C accessibility standards, BBC audio guidelines, YouTube/TikTok platform specs,

@@ -1,3 +1,9 @@
+---
+name: "creative/image-gen-usage"
+description: "Image Generation Usage for OpenMontage. ``` FLUX RESOLUTION: 1920x1088 (16:9) | 1088x1920 (9:16) — must be multiples of 16 MAX TOTAL: 4 megapixels (width x height) CONSISTENCY: Use hero image as input_image for subsequent frames STYLE SYSTEM: Derive from subject + audience + tone, t"
+when_to_use: "When the agent needs guidance for: image generation usage for openmontage."
+---
+
 # Image Generation Usage for OpenMontage
 
 > Sources: OpenAI DALL-E 3 documentation, FLUX/BFL API documentation, existing Layer 3 skills

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tools.base_tool import BaseTool, ToolResult, ToolRuntime, ToolStability, ToolTier, ToolStatus
+from openharness.openmontage.tools.base_tool import BaseTool, ToolResult, ToolRuntime, ToolStability, ToolTier, ToolStatus
 
 
 class TTSSelector(BaseTool):
@@ -86,7 +86,7 @@ class TTSSelector(BaseTool):
 
     def _providers(self) -> list[BaseTool]:
         """Auto-discover TTS providers from the registry."""
-        from tools.tool_registry import registry
+        from openharness.openmontage.tools.tool_registry import registry
         registry.ensure_discovered()
         return [t for t in registry.get_by_capability("tts")
                 if t.name != self.name]
@@ -118,7 +118,7 @@ class TTSSelector(BaseTool):
         return tool.estimate_cost(inputs) if tool else 0.0
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
-        from lib.scoring import rank_providers
+        from openharness.openmontage.lib.scoring import rank_providers
 
         task_context = self._prepare_task_context(inputs)
         candidates = self._providers()
@@ -161,7 +161,7 @@ class TTSSelector(BaseTool):
         task_context: dict[str, Any],
     ) -> tuple[BaseTool | None, object]:
         """Select the best TTS provider using scored ranking."""
-        from lib.scoring import rank_providers
+        from openharness.openmontage.lib.scoring import rank_providers
 
         preferred = inputs.get("preferred_provider", "auto")
         allowed = set(inputs.get("allowed_providers") or [])
@@ -187,7 +187,7 @@ class TTSSelector(BaseTool):
         return None, None
 
     def _prepare_task_context(self, inputs: dict[str, Any]) -> dict[str, Any]:
-        from lib.scoring import normalize_task_context
+        from openharness.openmontage.lib.scoring import normalize_task_context
 
         return normalize_task_context(
             inputs.get("task_context", {}),

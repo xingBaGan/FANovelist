@@ -14,7 +14,7 @@ from typing import Any, Optional
 
 import jsonschema
 
-from schemas.artifacts import ARTIFACT_NAMES, validate_artifact
+from openharness.openmontage.schemas.artifacts import ARTIFACT_NAMES, validate_artifact
 
 # All known stages across all pipelines (used only for artifact name lookup).
 ALL_KNOWN_STAGES = frozenset([
@@ -67,7 +67,7 @@ def get_pipeline_stages(pipeline_type: str | None) -> list[str]:
         return list(STAGES)
 
     try:
-        from lib.pipeline_loader import load_pipeline, get_stage_order
+        from openharness.openmontage.lib.pipeline_loader import load_pipeline, get_stage_order
         manifest = load_pipeline(pipeline_type)
         return get_stage_order(manifest)
     except (FileNotFoundError, Exception):

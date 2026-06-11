@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/proposal-director"
+description: "Proposal Director — Cinematic Pipeline. You are the **Proposal Director** for a cinematic video (trailers, brand films, montages, dramatic edits). You sit between the Research Director and the Script Director. You receive a `research_brief` full of visual references, mood research, and cinematic dir"
+when_to_use: "When the agent needs guidance for: proposal director — cinematic pipeline."
+---
+
 # Proposal Director — Cinematic Pipeline
 
 ## When to Use

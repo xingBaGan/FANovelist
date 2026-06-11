@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -311,7 +311,7 @@ class AutoReframe(BaseTool):
 
         # Try to run face_tracker internally
         try:
-            from tools.analysis.face_tracker import FaceTracker
+            from openharness.openmontage.tools.analysis.face_tracker import FaceTracker
             tracker = FaceTracker()
             if tracker.get_status().name == "UNAVAILABLE":
                 return []

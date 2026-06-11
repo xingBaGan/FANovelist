@@ -1,3 +1,9 @@
+---
+name: "meta/reviewer"
+description: "Reviewer — Meta Skill. After completing any pipeline stage's work — before checkpointing. You are the quality gate between \"work done\" and \"work accepted.\" This skill replaces the Python reviewer class with an instruction-driven self-review protocol."
+when_to_use: "When the agent needs guidance for: reviewer — meta skill."
+---
+
 # Reviewer — Meta Skill
 
 ## When to Use

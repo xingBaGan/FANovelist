@@ -231,7 +231,7 @@ def review_source_media(
     """
     if tool_registry is None:
         try:
-            from tools.tool_registry import registry
+            from openharness.openmontage.tools.tool_registry import registry
             registry.ensure_discovered()
             tool_registry = registry
         except Exception:

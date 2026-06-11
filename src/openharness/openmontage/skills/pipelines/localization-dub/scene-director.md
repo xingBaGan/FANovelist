@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/scene-director"
+description: "Scene Director - Localization Dub Pipeline. Plan how each localized deliverable will handle timing, visible speech, subtitles, and on-screen text. This is where the pipeline decides whether to preserve the original cut, cover mouth-visible sections, or attempt lip sync."
+when_to_use: "When the agent needs guidance for: scene director - localization dub pipeline."
+---
+
 # Scene Director - Localization Dub Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/ltx-prompting"
+description: "LTX-2 — Prompting Guide. LTX-2 uses a clean, focused prompt structure:"
+when_to_use: "When the agent needs guidance for: ltx-2 — prompting guide."
+---
+
 # LTX-2 — Prompting Guide
 
 > Source: [LTX Official Prompting Guide](https://docs.ltx.video/api-documentation/prompting-guide)

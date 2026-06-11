@@ -41,3 +41,8 @@ mlruns
 .agents
 generated_images
 work-*
+workspace/
+studio/
+audio/
+.codex
+.antigravitycli

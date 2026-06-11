@@ -1,4 +1,8 @@
-"""Local Stable Diffusion image generation via diffusers."""
+"""Local FLUX image generation via a ComfyUI HTTP backend.
+
+Replaces the previous in-process Stable Diffusion/diffusers path. Point
+COMFYUI_BACKEND_URL at a LAN or local ComfyUI server running the FLUX workflow.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -18,41 +22,48 @@ from tools.base_tool import (
     ToolStatus,
     ToolTier,
 )
+from openharness.openmontage.tools.graphics._comfyui_client import (
+    generate_images_bytes,
+    is_comfyui_configured,
+    resolve_comfyui_base_url,
+)
 
 
 class LocalDiffusion(BaseTool):
     name = "local_diffusion"
-    version = "0.1.0"
+    version = "0.2.0"
     tier = ToolTier.GENERATE
     capability = "image_generation"
     provider = "local_diffusion"
-    stability = ToolStability.EXPERIMENTAL
+    stability = ToolStability.BETA
     execution_mode = ExecutionMode.SYNC
     determinism = Determinism.SEEDED
-    runtime = ToolRuntime.LOCAL_GPU
+    runtime = ToolRuntime.HYBRID
 
-    dependencies = []  # checked dynamically
+    dependencies = []
     install_instructions = (
-        "Install diffusers for local Stable Diffusion:\n"
-        "  pip install diffusers transformers accelerate torch"
+        "Run a ComfyUI FLUX backend and set its URL:\n"
+        "  COMFYUI_BACKEND_URL=http://<host>:8190\n"
+        "  # or COMFYUI_URL=http://<host>:8190\n"
+        "The backend must expose POST /generate and GET /image endpoints."
     )
-    agent_skills = []
+    agent_skills = ["flux-best-practices"]
 
     capabilities = ["generate_image", "generate_illustration", "text_to_image"]
     supports = {
         "negative_prompt": True,
         "seed": True,
-        "offline": True,
         "custom_size": True,
+        "comfyui_backend": True,
     }
     best_for = [
-        "offline/air-gapped generation",
-        "free image generation (no API cost)",
-        "privacy-sensitive workflows",
+        "local or LAN FLUX generation via ComfyUI (no cloud API cost)",
+        "free image generation when a ComfyUI GPU server is available",
+        "privacy-sensitive workflows using your own hardware",
     ]
     not_good_for = [
-        "CPU-only machines (very slow)",
-        "highest quality output (API models are better)",
+        "machines without a reachable ComfyUI backend",
+        "environments with no COMFYUI_BACKEND_URL configured",
     ]
 
     input_schema = {
@@ -61,99 +72,72 @@ class LocalDiffusion(BaseTool):
         "properties": {
             "prompt": {"type": "string"},
             "negative_prompt": {"type": "string", "default": ""},
-            "width": {"type": "integer", "default": 512},
-            "height": {"type": "integer", "default": 512},
-            "model": {
-                "type": "string",
-                "default": "stabilityai/stable-diffusion-2-1-base",
-            },
-            "seed": {"type": "integer"},
-            "num_inference_steps": {"type": "integer", "default": 30},
-            "guidance_scale": {"type": "number", "default": 7.5},
+            "width": {"type": "integer", "default": 1024},
+            "height": {"type": "integer", "default": 1024},
+            "size": {"type": "string", "description": "Alternative to width/height, e.g. 1024x1024"},
+            "seed": {"type": "integer", "default": -1},
+            "steps": {"type": "integer", "default": 6},
+            "num_inference_steps": {"type": "integer", "description": "Alias for steps"},
+            "cfg": {"type": "number", "default": 1.0},
+            "guidance_scale": {"type": "number", "description": "Alias for cfg"},
+            "filename_prefix": {"type": "string", "default": "OpenMontage_Flux2"},
             "output_path": {"type": "string"},
+            "comfyui_base_url": {"type": "string", "description": "Override COMFYUI_BACKEND_URL"},
         },
     }
 
     resource_profile = ResourceProfile(
-        cpu_cores=2, ram_mb=8000, vram_mb=4000, disk_mb=5000, network_required=False
+        cpu_cores=1, ram_mb=512, vram_mb=0, disk_mb=200, network_required=True
     )
-    retry_policy = RetryPolicy(max_retries=1)
-    idempotency_key_fields = ["prompt", "width", "height", "seed", "model"]
-    side_effects = ["writes image file to output_path", "may download model weights on first run"]
+    retry_policy = RetryPolicy(max_retries=1, retryable_errors=["timeout", "connection"])
+    idempotency_key_fields = ["prompt", "width", "height", "seed"]
+    side_effects = ["writes image file to output_path", "calls ComfyUI HTTP backend"]
     user_visible_verification = ["Inspect generated image for relevance and quality"]
 
     def get_status(self) -> ToolStatus:
-        try:
-            import diffusers  # noqa: F401
+        if is_comfyui_configured():
             return ToolStatus.AVAILABLE
-        except ImportError:
-            return ToolStatus.UNAVAILABLE
+        return ToolStatus.UNAVAILABLE
 
     def estimate_cost(self, inputs: dict[str, Any]) -> float:
         return 0.0
 
     def estimate_runtime(self, inputs: dict[str, Any]) -> float:
-        return 30.0  # ~30s on a mid-range GPU
+        steps = inputs.get("steps") or inputs.get("num_inference_steps", 6)
+        return max(10.0, float(steps) * 2.0)
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
-        if self.get_status() != ToolStatus.AVAILABLE:
+        if not is_comfyui_configured():
             return ToolResult(
                 success=False,
-                error="diffusers not installed. " + self.install_instructions,
+                error="ComfyUI backend is not configured. " + self.install_instructions,
             )
-
-        import torch
-        from diffusers import StableDiffusionPipeline
 
         start = time.time()
         prompt = inputs["prompt"]
-        negative = inputs.get("negative_prompt", "")
-        width = inputs.get("width", 512)
-        height = inputs.get("height", 512)
-        seed = inputs.get("seed")
-        model_id = inputs.get("model", "stabilityai/stable-diffusion-2-1-base")
-        steps = inputs.get("num_inference_steps", 30)
-        guidance = inputs.get("guidance_scale", 7.5)
+        base_url = resolve_comfyui_base_url(inputs.get("comfyui_base_url"))
 
         try:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            dtype = torch.float16 if device == "cuda" else torch.float32
-
-            pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=dtype)
-            pipe = pipe.to(device)
-
-            generator = None
-            if seed is not None:
-                generator = torch.Generator(device=device).manual_seed(seed)
-
-            image = pipe(
-                prompt,
-                negative_prompt=negative,
-                width=width,
-                height=height,
-                num_inference_steps=steps,
-                guidance_scale=guidance,
-                generator=generator,
-            ).images[0]
-
+            image_bytes_list = generate_images_bytes(base_url, inputs, prompt)
             output_path = Path(inputs.get("output_path", "generated_image.png"))
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            image.save(str(output_path))
+            output_path.write_bytes(image_bytes_list[0])
+        except Exception as exc:
+            return ToolResult(success=False, error=f"ComfyUI FLUX generation failed: {exc}")
 
-        except Exception as e:
-            return ToolResult(success=False, error=f"Local diffusion generation failed: {e}")
-
+        seed = inputs.get("seed")
         return ToolResult(
             success=True,
             data={
-                "provider": "local_diffusion",
-                "model": model_id,
+                "provider": "comfyui",
+                "backend": base_url,
+                "model": "flux-comfyui",
                 "prompt": prompt,
                 "output": str(output_path),
             },
             artifacts=[str(output_path)],
             cost_usd=0.0,
             duration_seconds=round(time.time() - start, 2),
-            seed=seed,
-            model=model_id,
+            seed=seed if isinstance(seed, int) and seed >= 0 else None,
+            model="flux-comfyui",
         )

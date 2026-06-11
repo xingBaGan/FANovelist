@@ -1,3 +1,9 @@
+---
+name: "creative/short-form"
+description: "Short-Form Video Pipeline (TikTok / Reels / Shorts). ``` ASPECT RATIO: 9:16 vertical (1080x1920) SAFE ZONE: 900x1400px centered (universal cross-platform) DURATION: 15s (highest completion) | 30s (best engagement) | 60s (most flexible) HOOK: First 1-2 seconds — visual"
+when_to_use: "When the agent needs guidance for: short-form video pipeline (tiktok / reels / shorts)."
+---
+
 # Short-Form Video Pipeline (TikTok / Reels / Shorts)
 
 > Sources: TikTok Creator Portal, Instagram for Business blog, YouTube Shorts documentation,

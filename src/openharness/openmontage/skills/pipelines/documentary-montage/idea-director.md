@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/idea-director"
+description: "Idea Director - Documentary Montage Pipeline. You are turning a user prompt into the brief artifact that every downstream stage will read. For this pipeline, the brief is the thematic core: what the montage is ABOUT, what it should feel like, and how long it should run."
+when_to_use: "When the agent needs guidance for: idea director - documentary montage pipeline."
+---
+
 # Idea Director - Documentary Montage Pipeline
 
 ## When To Use

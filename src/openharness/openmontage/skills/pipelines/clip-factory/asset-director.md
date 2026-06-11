@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/asset-director"
+description: "Asset Director - Clip Factory Pipeline. This stage builds the shared visual and audio kit for the entire clip batch. The key is reuse, not bespoke design per clip."
+when_to_use: "When the agent needs guidance for: asset director - clip factory pipeline."
+---
+
 # Asset Director - Clip Factory Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/documentary-montage/edit-director"
+description: "Edit Director - Documentary Montage Pipeline. Every slot has a clip. You now have to turn a pile of clips into a piece. This stage decides in-points, out-points, transitions, music sync, and the order the clips actually run. The output is an `edit_decisions` artifact with a concrete timeline."
+when_to_use: "When the agent needs guidance for: edit director - documentary montage pipeline."
+---
+
 # Edit Director - Documentary Montage Pipeline
 
 ## When To Use

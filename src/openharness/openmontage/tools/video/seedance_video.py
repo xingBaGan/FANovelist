@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -215,7 +215,7 @@ class SeedanceVideo(BaseTool):
             if inputs.get("image_url"):
                 payload["image_url"] = inputs["image_url"]
             elif inputs.get("image_path"):
-                from tools.video._shared import upload_image_fal
+                from openharness.openmontage.tools.video._shared import upload_image_fal
                 payload["image_url"] = upload_image_fal(inputs["image_path"])
             if inputs.get("end_image_url"):
                 payload["end_image_url"] = inputs["end_image_url"]
@@ -223,7 +223,7 @@ class SeedanceVideo(BaseTool):
         if operation == "reference_to_video":
             ref_image_urls = list(inputs.get("reference_image_urls") or [])
             for local_path in inputs.get("reference_image_paths") or []:
-                from tools.video._shared import upload_image_fal
+                from openharness.openmontage.tools.video._shared import upload_image_fal
                 ref_image_urls.append(upload_image_fal(local_path))
             # Seedance 2.0 reference-to-video ceilings: 9 images + 3 video + 3 audio.
             if len(ref_image_urls) > 9:
@@ -298,7 +298,7 @@ class SeedanceVideo(BaseTool):
                 error=f"Seedance 2.0 video generation failed: {e}",
             )
 
-        from tools.video._shared import probe_output
+        from openharness.openmontage.tools.video._shared import probe_output
 
         probed = probe_output(output_path)
         return ToolResult(

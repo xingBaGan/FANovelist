@@ -12,7 +12,7 @@ from typing import Any, Optional
 import yaml
 import jsonschema
 
-PIPELINE_DEFS_DIR = Path(__file__).resolve().parent.parent / "pipeline_defs"
+PIPELINE_DEFS_DIR = Path(__file__).resolve().parent.parent / "pipelines"
 SCHEMA_PATH = (
     Path(__file__).resolve().parent.parent
     / "schemas"

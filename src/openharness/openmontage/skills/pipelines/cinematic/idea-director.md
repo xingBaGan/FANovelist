@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/idea-director"
+description: "Idea Director - Cinematic Pipeline. Use this pipeline for trailers, brand films, dramatic montages, or mood-led short videos where rhythm, atmosphere, and emotional escalation matter more than direct explanation."
+when_to_use: "When the agent needs guidance for: idea director - cinematic pipeline."
+---
+
 # Idea Director - Cinematic Pipeline
 
 ## When To Use

@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/scene-director"
+description: "Scene Director — Explainer Pipeline. You are the Scene Planner for a generated explainer video. You have a `script` artifact with timestamped sections and enhancement cues. Your job is to transform the script into a visual plan: what the viewer sees at every moment, what assets need to be created, a"
+when_to_use: "When the agent needs guidance for: scene director — explainer pipeline."
+---
+
 # Scene Director — Explainer Pipeline
 
 ## When to Use

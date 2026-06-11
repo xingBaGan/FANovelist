@@ -1,3 +1,9 @@
+---
+name: "creative/manim-usage"
+description: "ManimCE Usage for OpenMontage. ``` RENDER QUALITY: -qh (1080p60) for YouTube | -qm (720p30) for drafts BACKGROUND: Dark (#1a1a2e or BLACK) MAX ELEMENTS: 3-4 new visual elements revealed simultaneously PACING: One concept per scene, build incrementally EQUATION WRITE: 1.5-2."
+when_to_use: "When the agent needs guidance for: manimce usage for openmontage."
+---
+
 # ManimCE Usage for OpenMontage
 
 > Sources: ManimCE documentation, 3Blue1Brown FAQ/conventions, Theorem of Beethoven tutorials,

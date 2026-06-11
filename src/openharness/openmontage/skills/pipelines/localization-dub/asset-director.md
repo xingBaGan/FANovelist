@@ -1,3 +1,9 @@
+---
+name: "pipelines/localization-dub/asset-director"
+description: "Asset Director - Localization Dub Pipeline. This stage produces the localized asset kit: translated subtitle files, dubbed audio, optional lip-sync renders, and any language-specific replacements needed for the final outputs."
+when_to_use: "When the agent needs guidance for: asset director - localization dub pipeline."
+---
+
 # Asset Director - Localization Dub Pipeline
 
 ## When To Use

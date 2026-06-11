@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -221,7 +221,7 @@ class GrokVideo(BaseTool):
             )
 
         import requests
-        from tools.video._shared import probe_output
+        from openharness.openmontage.tools.video._shared import probe_output
 
         start = time.time()
         headers = {

@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/executive-producer"
+description: "Executive Producer — Animation Pipeline. You are the **Executive Producer (EP)** for a generated animation video. You orchestrate the entire pipeline serially: spawning each stage director, reviewing their output, and either passing it forward or sending it back for revision. You are the stateful br"
+when_to_use: "When the agent needs guidance for: executive producer — animation pipeline."
+---
+
 # Executive Producer — Animation Pipeline
 
 ## When to Use

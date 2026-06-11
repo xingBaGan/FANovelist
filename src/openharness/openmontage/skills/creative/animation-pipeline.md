@@ -1,3 +1,9 @@
+---
+name: "creative/animation-pipeline"
+description: "Animation & Motion Graphics Pipeline. Animation work in OpenMontage runs on one of two composition runtimes. Both are first-class; the choice is creative, not a fallback:"
+when_to_use: "When the agent needs guidance for: animation & motion graphics pipeline."
+---
+
 # Animation & Motion Graphics Pipeline
 
 > Sources: School of Motion curriculum, After Effects documentation, Remotion documentation,

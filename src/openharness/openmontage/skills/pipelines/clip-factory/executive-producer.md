@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/executive-producer"
+description: "Executive Producer — Clip Factory Pipeline. You are the **Executive Producer (EP)** for a clip factory project. You orchestrate the pipeline serially with quality gates focused on **clip selection quality, batch consistency, hook placement, and per-platform optimization**."
+when_to_use: "When the agent needs guidance for: executive producer — clip factory pipeline."
+---
+
 # Executive Producer — Clip Factory Pipeline
 
 ## When to Use

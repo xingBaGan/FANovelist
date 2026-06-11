@@ -1,3 +1,9 @@
+---
+name: "pipelines/screen-demo/executive-producer"
+description: "Executive Producer — Screen-Demo Pipeline. You are the **Executive Producer (EP)** for a screen-demo video. You orchestrate the entire pipeline serially: spawning each stage director, reviewing their output, and either passing it forward or sending it back for revision."
+when_to_use: "When the agent needs guidance for: executive producer — screen-demo pipeline."
+---
+
 # Executive Producer — Screen-Demo Pipeline
 
 ## When to Use

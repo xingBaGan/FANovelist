@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/idea-director"
+description: "Idea Director - Hybrid Pipeline. Use this pipeline when the project combines real source media with support visuals: interviews plus diagrams, footage plus overlays, screen recording plus branded graphics, or source-led edits with generated inserts."
+when_to_use: "When the agent needs guidance for: idea director - hybrid pipeline."
+---
+
 # Idea Director - Hybrid Pipeline
 
 ## When To Use

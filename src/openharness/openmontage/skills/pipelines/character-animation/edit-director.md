@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/edit-director"
+description: "Edit Director - Character Animation Pipeline. Produce `edit_decisions` and `action_timeline`."
+when_to_use: "When the agent needs guidance for: edit director - character animation pipeline."
+---
+
 # Edit Director - Character Animation Pipeline
 
 ## Goal

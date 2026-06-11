@@ -1,3 +1,9 @@
+---
+name: "pipelines/explainer/asset-director"
+description: "Asset Director — Explainer Pipeline. You are the Asset Producer for a generated explainer video. You have a `scene_plan` with required assets and a `script` with narration text. Your job is to generate every asset needed: narration audio, images, diagrams, code snippets, and background music. Every"
+when_to_use: "When the agent needs guidance for: asset director — explainer pipeline."
+---
+
 # Asset Director — Explainer Pipeline
 
 ## When to Use

@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from tools.base_tool import ToolResult, ToolStatus
+from openharness.openmontage.tools.base_tool import ToolResult, ToolStatus
 
 
 HEYGEN_PROVIDERS = {

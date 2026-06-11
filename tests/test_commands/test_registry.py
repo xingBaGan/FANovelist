@@ -1385,3 +1385,50 @@ def test_help_and_list_do_not_duplicate_aliases():
     help_text = reg.help_text()
     assert help_text.count("/exit ") == 1
     assert "/quit" not in help_text
+
+
+@pytest.mark.asyncio
+async def test_prompt_command(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("OPENHARNESS_CONFIG_DIR", str(tmp_path / "config"))
+    
+    # Create prompts directory
+    prompts_dir = tmp_path / "prompts"
+    prompts_dir.mkdir()
+    
+    novel_prompt = prompts_dir / "novel-writer.md"
+    novel_prompt.write_text(
+        "# Role: Suspense Novel Writer\nGoal: Write stories.",
+        encoding="utf-8"
+    )
+    
+    registry = create_default_command_registry()
+    command, _ = registry.lookup("/prompt")
+    assert command is not None
+    
+    context = _make_context(tmp_path)
+    
+    # 1. Test /prompt list
+    result_list = await command.handler("list", context)
+    assert "novel-writer" in result_list.message
+    assert "Suspense Novel Writer" in result_list.message
+    
+    # 2. Test /prompt status (should be empty initially)
+    result_status = await command.handler("status", context)
+    assert "No custom system prompt set" in result_status.message
+    
+    # 3. Test /prompt load novel-writer
+    result_load = await command.handler("load novel-writer", context)
+    assert "Successfully loaded system prompt template" in result_load.message
+    assert load_settings().system_prompt == "novel-writer"
+    
+    # Check that it updated the system prompt in the engine
+    assert "Suspense Novel Writer" in context.engine.system_prompt
+    
+    # 4. Test /prompt status again
+    result_status_loaded = await command.handler("status", context)
+    assert "Current custom system prompt template: **novel-writer**" in result_status_loaded.message
+    
+    # 5. Test /prompt clear
+    result_clear = await command.handler("clear", context)
+    assert "Custom system prompt cleared" in result_clear.message
+    assert load_settings().system_prompt is None

@@ -1,3 +1,9 @@
+---
+name: "creative/prompting/seedance-prompting"
+description: "Seedance 2.0 — Prompting Guide. Seedance 2.0 (ByteDance Seed team, released Feb 2026) is OpenMontage's **preferred premium default for cinematic, trailer, teaser, hype-edit, and motion-led clip work** whenever a paid gateway is configured (`FAL_KEY` via `seedance_video`, or HeyGen Video Agent / Avat"
+when_to_use: "When the agent needs guidance for: seedance 2.0 — prompting guide."
+---
+
 # Seedance 2.0 — Prompting Guide
 
 > Layer 3 authority: `.agents/skills/seedance-2-0/SKILL.md`

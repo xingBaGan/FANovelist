@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/publish-director"
+description: "Publish Director - Podcast Repurpose Pipeline. Package podcast-derived clips and companion assets so that every short-form piece points back to the episode instead of drifting as an isolated fragment."
+when_to_use: "When the agent needs guidance for: publish director - podcast repurpose pipeline."
+---
+
 # Publish Director - Podcast Repurpose Pipeline
 
 ## When To Use

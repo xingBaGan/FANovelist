@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/script-director"
+description: "Script Director — Animation Pipeline. This stage turns the approved proposal into animation-ready beats. The script must leave room for motion, staging, and hold time — and must integrate the research findings and respect the selected animation mode."
+when_to_use: "When the agent needs guidance for: script director — animation pipeline."
+---
+
 # Script Director — Animation Pipeline
 
 ## When to Use

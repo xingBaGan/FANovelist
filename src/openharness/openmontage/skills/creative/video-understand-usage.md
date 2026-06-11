@@ -1,3 +1,9 @@
+---
+name: "creative/video-understand-usage"
+description: "Video Understanding Usage for OpenMontage. ``` DEFAULT MODE: describe — generates captions for frames FOR REVIEW: quality — assesses blur, brightness, contrast FOR Q&A: qa mode with a query — \"Is the speaker visible?\" \"Is the text readable?\" DEFAULT MODEL: clip (fastest, good f"
+when_to_use: "When the agent needs guidance for: video understanding usage for openmontage."
+---
+
 # Video Understanding Usage for OpenMontage
 
 > Sources: OpenMontage video_understand tool implementation, CLIP/BLIP2/LLaVA model

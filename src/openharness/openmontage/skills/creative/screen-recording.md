@@ -1,3 +1,9 @@
+---
+name: "creative/screen-recording"
+description: "Screen Recording Pipeline. ``` RESOLUTION: 1920x1080 at 2x display (record at 3840x2160, deliver at 1080p) FRAME RATE: 60fps for UI/scrolling, 30fps for static code CURSOR: Enlarged (1.5-2x), highlighted with ring or glow ZOOM: 1.5-2x for code focus, 0.8s ease-in-ou"
+when_to_use: "When the agent needs guidance for: screen recording pipeline."
+---
+
 # Screen Recording Pipeline
 
 > Sources: OBS Studio documentation, Loom production guidelines, Fireship production

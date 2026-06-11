@@ -1,3 +1,9 @@
+---
+name: "pipelines/hybrid/script-director"
+description: "Script Director - Hybrid Pipeline. This stage maps the story across source-led beats and support-led beats. You are deciding where the source carries the message and where support assets clarify it."
+when_to_use: "When the agent needs guidance for: script director - hybrid pipeline."
+---
+
 # Script Director - Hybrid Pipeline
 
 ## When To Use

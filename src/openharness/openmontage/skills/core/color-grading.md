@@ -1,3 +1,9 @@
+---
+name: "core/color-grading"
+description: "Color Grading for Video Production. ``` PROFILES: cinematic_warm | cinematic_cool | moody_dark | bright_clean | vintage_film | high_contrast | neutral LUT FORMAT: .cube (3D LUT) — industry standard, FFmpeg lut3d filter INTENSITY: 0.6-0.85 for subtle grades, 1.0 for full effect SKIN TO"
+when_to_use: "When the agent needs guidance for: color grading for video production."
+---
+
 # Color Grading for Video Production
 
 > Sources: BBC Academy color standards, Filmmaker IQ color science series, DaVinci Resolve

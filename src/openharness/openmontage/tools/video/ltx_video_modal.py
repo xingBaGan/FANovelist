@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import time
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -17,7 +17,7 @@ from tools.base_tool import (
     ToolStatus,
     ToolTier,
 )
-from tools.video._shared import generate_ltx_modal_video
+from openharness.openmontage.tools.video._shared import generate_ltx_modal_video
 
 
 class LTXVideoModal(BaseTool):

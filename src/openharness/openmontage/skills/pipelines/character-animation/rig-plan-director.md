@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/rig-plan-director"
+description: "Rig Plan Director - Character Animation Pipeline. Produce `rig_plan` and `pose_library` from `character_design`."
+when_to_use: "When the agent needs guidance for: rig plan director - character animation pipeline."
+---
+
 # Rig Plan Director - Character Animation Pipeline
 
 ## Goal

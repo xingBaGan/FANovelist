@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,
@@ -127,7 +127,7 @@ class ScreenCaptureSelector(BaseTool):
 
     def _providers(self) -> dict[str, BaseTool]:
         """Auto-discover screen_capture providers from the registry."""
-        from tools.tool_registry import registry
+        from openharness.openmontage.tools.tool_registry import registry
         registry.ensure_discovered()
         tools = registry.get_by_capability("screen_capture")
         return {t.provider: t for t in tools if t.name != self.name}

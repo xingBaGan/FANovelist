@@ -19,7 +19,7 @@ from typing import Any
 import numpy as np
 from PIL import Image
 
-from tools.base_tool import (
+from openharness.openmontage.tools.base_tool import (
     BaseTool,
     Determinism,
     ExecutionMode,

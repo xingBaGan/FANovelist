@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/scene-director"
+description: "Scene Director — Talking Head Pipeline. You have a script (from transcription) and raw footage. Your job is to **watch the footage, understand the content, and propose a creative enhancement plan** — then build a scene plan that transforms raw talking-head footage into an engaging, visually rich vid"
+when_to_use: "When the agent needs guidance for: scene director — talking head pipeline."
+---
+
 # Scene Director — Talking Head Pipeline
 
 ## When to Use

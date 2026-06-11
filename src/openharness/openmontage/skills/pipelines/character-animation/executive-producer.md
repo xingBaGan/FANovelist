@@ -1,3 +1,9 @@
+---
+name: "pipelines/character-animation/executive-producer"
+description: "Executive Producer - Character Animation Pipeline. Use this pipeline when the requested deliverable depends on reusable animated characters: cartoon shorts, mascot explainers, music-led character scenes, dialogue between simple characters, or reference-inspired local animation."
+when_to_use: "When the agent needs guidance for: executive producer - character animation pipeline."
+---
+
 # Executive Producer - Character Animation Pipeline
 
 ## When To Use

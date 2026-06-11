@@ -1,3 +1,9 @@
+---
+name: "pipelines/avatar-spokesperson/compose-director"
+description: "Compose Director - Avatar Spokesperson Pipeline. Render the final spokesperson outputs. The bar is simple: the presenter must look stable, speech must be clear, and subtitles or support cards must not crowd the frame."
+when_to_use: "When the agent needs guidance for: compose director - avatar spokesperson pipeline."
+---
+
 # Compose Director - Avatar Spokesperson Pipeline
 
 ## When To Use

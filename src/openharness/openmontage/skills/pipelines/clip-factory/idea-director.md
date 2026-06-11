@@ -1,3 +1,9 @@
+---
+name: "pipelines/clip-factory/idea-director"
+description: "Idea Director - Clip Factory Pipeline. Use this pipeline when the source is long-form footage and the goal is multiple short-form deliverables: webinar clips, interview cuts, livestream highlights, keynote excerpts, or presentation snippets."
+when_to_use: "When the agent needs guidance for: idea director - clip factory pipeline."
+---
+
 # Idea Director - Clip Factory Pipeline
 
 ## When To Use

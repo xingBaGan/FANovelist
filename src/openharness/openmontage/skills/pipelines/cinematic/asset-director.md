@@ -1,3 +1,9 @@
+---
+name: "pipelines/cinematic/asset-director"
+description: "Asset Director - Cinematic Pipeline. This stage prepares the usable media for the final cinematic edit: source selects, title-card assets, optional support inserts, music, ambience, and subtitle assets when needed."
+when_to_use: "When the agent needs guidance for: asset director - cinematic pipeline."
+---
+
 # Asset Director - Cinematic Pipeline
 
 ## When To Use

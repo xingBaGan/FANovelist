@@ -1,3 +1,9 @@
+---
+name: "pipelines/podcast-repurpose/edit-director"
+description: "Edit Director - Podcast Repurpose Pipeline. This stage creates the actual timeline logic for short clips and any optional full-episode companion asset. The audio remains the primary content."
+when_to_use: "When the agent needs guidance for: edit director - podcast repurpose pipeline."
+---
+
 # Edit Director - Podcast Repurpose Pipeline
 
 ## When To Use

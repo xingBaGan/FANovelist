@@ -1,3 +1,9 @@
+---
+name: "meta/checkpoint-protocol"
+description: "Checkpoint Protocol — Meta Skill. After completing a stage's work AND passing review. This skill teaches you when and how to checkpoint, and when to ask the human for approval. It replaces the Python `checkpoint_policy.py` with an instruction-driven protocol."
+when_to_use: "When the agent needs guidance for: checkpoint protocol — meta skill."
+---
+
 # Checkpoint Protocol — Meta Skill
 
 ## When to Use

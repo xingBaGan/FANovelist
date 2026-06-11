@@ -1,3 +1,9 @@
+---
+name: "pipelines/animation/proposal-director"
+description: "Proposal Director — Animation Pipeline. You are the **Proposal Director** for a generated animation video. You sit between the Research Director and the Script Director. You receive a `research_brief` full of raw findings — both topic data and animation technique research — and transform it into a c"
+when_to_use: "When the agent needs guidance for: proposal director — animation pipeline."
+---
+
 # Proposal Director — Animation Pipeline
 
 ## When to Use

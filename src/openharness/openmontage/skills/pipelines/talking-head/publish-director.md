@@ -1,3 +1,9 @@
+---
+name: "pipelines/talking-head/publish-director"
+description: "Publish Director — Talking Head Pipeline. You have a render report with the final video. Your job is to prepare metadata, thumbnails, and an export package for publishing."
+when_to_use: "When the agent needs guidance for: publish director — talking head pipeline."
+---
+
 # Publish Director — Talking Head Pipeline
 
 ## When to Use
