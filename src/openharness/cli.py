@@ -585,7 +585,7 @@ def _build_dry_run_preview(
             _validate_mcp_server(name, config)
             for name, config in sorted(mcp_servers.items())
         ],
-        "system_prompt_preview": _safe_short(system_prompt_text, limit=600),
+        "system_prompt_preview": system_prompt_text,
     }
     mcp_errors = sum(1 for entry in preview["mcp_servers"] if entry.get("status") == "error")
     preview["validation"]["mcp_errors"] = mcp_errors
@@ -675,7 +675,7 @@ def _format_dry_run_preview(preview: dict[str, object]) -> str:
 
     if tools:
         lines.extend(["", "Available Tools"])
-        for entry in tools[:12]:
+        for entry in tools:
             required = entry.get("required_args") or []
             optional = entry.get("optional_args") or []
             signature_parts: list[str] = []
@@ -685,9 +685,6 @@ def _format_dry_run_preview(preview: dict[str, object]) -> str:
                 signature_parts.append("optional: " + ", ".join(optional[:4]))
             suffix = f" ({'; '.join(signature_parts)})" if signature_parts else ""
             lines.append(f"- {entry.get('name')}{suffix}")
-        if len(tools) > 12:
-            lines.append(f"- ... (+{len(tools) - 12} more)")
-
     if skills:
         lines.extend(["", "Available Skills"])
         for entry in skills[:8]:

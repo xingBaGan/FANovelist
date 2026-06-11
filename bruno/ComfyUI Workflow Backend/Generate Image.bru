@@ -1,0 +1,29 @@
+meta {
+  name: Generate Image
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/generate
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "prompt": "A cinematic portrait photo, photorealistic, soft daylight",
+    "negative_prompt": "",
+    "width": 720,
+    "height": 1280,
+    "steps": 6,
+    "cfg": 1,
+    "seed": -1,
+    "filename_prefix": "LAN_Flux2",
+    "wait": true
+  }
+}

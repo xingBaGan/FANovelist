@@ -34,7 +34,20 @@ class SkillTool(BaseTool):
         skill = registry.get(arguments.name) or registry.get(arguments.name.lower()) or registry.get(arguments.name.title())
         if skill is None:
             return ToolResult(output=f"Skill not found: {arguments.name}", is_error=True)
-        if skill.disable_model_invocation:
+        # `disable_model_invocation` was designed for user-only slash commands
+        # ("deploy", "build", etc. — short, flat names the model could pick
+        # up from context or guess). For such skills we keep blocking the
+        # model from invoking them via the skill tool.
+        #
+        # Hierarchically-namespaced skills (names containing "/", e.g.
+        # "pipelines/cinematic/executive-producer", "meta/checkpoint-protocol")
+        # are addressed by their exact path. They're hidden from the
+        # auto-listing in `prompts/context.py` so the model can only learn
+        # the path from explicit instructions (e.g. a plugin's slash-command
+        # prompt). Loading them when asked by full name is the documented
+        # intent — see the comment in
+        # `openharness.openmontage.bridge.pipeline_to_plugin._build_skills`.
+        if skill.disable_model_invocation and "/" not in skill.name:
             command_name = skill.command_name or skill.name
             return ToolResult(
                 output=f"Skill {command_name} can only be invoked by the user as /{command_name}.",

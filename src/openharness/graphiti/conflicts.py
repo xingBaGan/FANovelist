@@ -87,6 +87,24 @@ _DELIMITERS_RE = re.compile(
 
 
 def _subject_from_fact(text: str, match: re.Match[str] | None = None) -> str:
+    if match:
+        prefix = text[:match.start()].strip()
+        parts = _DELIMITERS_RE.split(prefix)
+        if parts and parts[0].strip():
+            subject = parts[0].strip()
+            if subject.endswith("'s"):
+                subject = subject[:-2].strip()
+            elif subject.endswith("'"):
+                subject = subject[:-1].strip()
+            
+            # Clean common Chinese adverbs/conjunctions/particles from the tail
+            for suffix in ("其实", "也", "又", "还", "并且", "就", "已经", "则", "却", "自幼", "从小"):
+                if subject.endswith(suffix):
+                    subject = subject[:-len(suffix)].strip()
+            
+            if 2 <= len(subject) <= 30:
+                return subject
+
     text_clean = text.strip()
     parts = _DELIMITERS_RE.split(text_clean)
     if parts and parts[0].strip():

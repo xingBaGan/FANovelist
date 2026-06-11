@@ -10,7 +10,7 @@ export function Footer({status, taskCount}: {status: Record<string, unknown>; ta
 				{String(taskCount)} mcp={String(status.mcp_connected ?? 0)}/{String(status.mcp_failed ?? 0)} bridge=
 				{String(status.bridge_sessions ?? 0)} vim={String(Boolean(status.vim_enabled))} voice=
 				{String(Boolean(status.voice_enabled))} effort={String(status.effort ?? 'medium')} passes=
-				{String(status.passes ?? 1)}
+				{String(status.passes ?? 1)} mlflow={String(status.mlflow_status ?? 'off')}
 			</Text>
 		</Box>
 	);

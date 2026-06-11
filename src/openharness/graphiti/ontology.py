@@ -30,6 +30,22 @@ class MajorCharacter(BaseModel):
         default=None,
         description="当前身份或处境，如 外门弟子、江湖崭露头角。",
     )
+    desire: str | None = Field(
+        default=None,
+        description="人物当下的核心动机与欲望。仅在此处发生变动或被明确提及填写。",
+    )
+    fear: str | None = Field(
+        default=None,
+        description="人物的核心软肋与恐惧。",
+    )
+    emotional_state: str | None = Field(
+        default=None,
+        description="人物当前主导情绪，如：焦虑、愤怒、决绝、信任。仅在此处发生显著改变时填写。",
+    )
+    physical_status: str | None = Field(
+        default=None,
+        description="当前生命与物理肉体状态，如：健康、重伤、中毒、真气耗尽。",
+    )
 
 
 class MinorCharacter(BaseModel):
@@ -62,6 +78,27 @@ class Event(BaseModel):
     time_hint: str | None = Field(default=None, description="时间提示，若有")
 
 
+class Belief(BaseModel):
+    """认知或信念节点，用于刻画人物认知和信息差。"""
+
+    content: str = Field(description="相信的具体信念或所知晓的事情，必须是具体的客观陈述。")
+    is_misconception: bool = Field(default=False, description="是否为误解、误判或谎言。若为误解则为 True。")
+
+
+class ChekhovsGun(BaseModel):
+    """契诃夫之枪，指对剧情有关键推动作用的实体道具。"""
+
+    nature: str = Field(description="道具的戏剧性本质，例如：伪造的信件、致命毒药。")
+    state: str | None = Field(default=None, description="道具当前状态，如：未拆封、已被发现、已损坏。")
+
+
+class DramaEvent(BaseModel):
+    """戏剧事件，具有明确前因后果的事件。"""
+
+    description: str = Field(description="动作或核心事件的极简叙述，如：出示伪造信、咸菜贿赂。")
+    consequence: str | None = Field(default=None, description="该事件直接触发的表面后果。")
+
+
 class Organization(BaseModel):
     """门派、组织、势力。"""
 
@@ -87,6 +124,9 @@ NOVEL_ENTITY_TYPES: dict[str, type[BaseModel]] = {
     "RelatedPerson": RelatedPerson,
     "Location": Location,
     "Event": Event,
+    "Belief": Belief,
+    "ChekhovsGun": ChekhovsGun,
+    "DramaEvent": DramaEvent,
     "Organization": Organization,
     "NarrativeElement": NarrativeElement,
 }
@@ -168,6 +208,8 @@ NOVEL_EDGE_TYPES: dict[str, type[BaseModel]] = {
     "FRIEND_OF": SocialRelation,
     "WORKED_AT": SocialRelation,
     "LEADER_OF": SocialRelation,
+    "BELIEVES": SocialRelation,
+    "KNOWS_SECRET_OF": SocialRelation,
     # KinshipRelation
     "PARENT_OF": KinshipRelation,
     "CHILD_OF": KinshipRelation,
@@ -184,6 +226,8 @@ NOVEL_EDGE_TYPES: dict[str, type[BaseModel]] = {
     "TRUSTS": EmotionalRelation,
     "RESPECTS": EmotionalRelation,
     "ADMIRES": EmotionalRelation,
+    "CONCEALS_FROM": EmotionalRelation,
+    "SUSPECTS": EmotionalRelation,
     # ActionRelation
     "KILLED": ActionRelation,
     "SAVED": ActionRelation,
@@ -208,6 +252,7 @@ NOVEL_EDGE_TYPES: dict[str, type[BaseModel]] = {
     "SPENT": ActionRelation,
     "CONSUMED": ActionRelation,
     "CONSUMED_BY": ActionRelation,
+    "ALTERS": ActionRelation,
     # PhysicalRelation
     "OWNS": PhysicalRelation,
     "HAS_ITEM": PhysicalRelation,
@@ -223,7 +268,9 @@ _CHAR_LABELS = ["MajorCharacter", "MinorCharacter", "RelatedPerson"]
 _ORG_LABELS = ["Organization"]
 _LOC_LABELS = ["Location"]
 _ELEMENT_LABELS = ["NarrativeElement"]
-_EVENT_LABELS = ["Event"]
+_EVENT_LABELS = ["Event", "DramaEvent"]
+_BELIEF_LABELS = ["Belief"]
+_GUN_LABELS = ["ChekhovsGun"]
 
 NOVEL_EDGE_TYPE_MAP: dict[tuple[str, str], list[str]] = {}
 
@@ -233,7 +280,7 @@ for _c1 in _CHAR_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_c1, _c2)] = [
             "MASTER_OF", "DISCIPLE_OF", "ENEMY_OF", "ALLY_OF", "FRIEND_OF", "LEADER_OF",
             "PARENT_OF", "CHILD_OF", "SPOUSE_OF", "SIBLING_OF", "FATHER_OF", "MOTHER_OF", "WIFE_OF", "HUSBAND_OF",
-            "LOVES", "HATES", "FEARS", "TRUSTS", "RESPECTS", "ADMIRES",
+            "LOVES", "HATES", "FEARS", "TRUSTS", "RESPECTS", "ADMIRES", "CONCEALS_FROM", "SUSPECTS", "KNOWS_SECRET_OF",
             "KILLED", "SAVED", "HELPED", "ATTACKED", "DEFEATED", "BETRAYED", "GAVE_ITEM_TO", "STOLE_FROM", "STUDIED", "LEARNED",
             "TRANSFORMED_TO", "BECOMES"
         ]
@@ -260,6 +307,20 @@ for _c in _CHAR_LABELS:
             "SPENT", "CONSUMED", "CONSUMED_BY"
         ]
 
+# Character to Belief relations
+for _c in _CHAR_LABELS:
+    for _b in _BELIEF_LABELS:
+        NOVEL_EDGE_TYPE_MAP[(_c, _b)] = [
+            "BELIEVES", "TRUSTS", "FEARS", "SUSPECTS", "HATES"
+        ]
+
+# Character to ChekhovsGun relations
+for _c in _CHAR_LABELS:
+    for _gun in _GUN_LABELS:
+        NOVEL_EDGE_TYPE_MAP[(_c, _gun)] = [
+            "OWNS", "HAS_ITEM", "STOLE_FROM", "GAVE_ITEM_TO", "ALTERS", "TRUSTS", "FEARS", "LOVES", "HATES", "SUSPECTS"
+        ]
+
 # NarrativeElement to Character relations
 for _elem in _ELEMENT_LABELS:
     for _c in _CHAR_LABELS:
@@ -267,39 +328,60 @@ for _elem in _ELEMENT_LABELS:
             "TRANSFORMED_TO", "BECOMES", "EVOLVED_INTO", "CONSUMED_BY"
         ]
 
-# Character to Event relations
+# ChekhovsGun to Character relations
+for _gun in _GUN_LABELS:
+    for _c in _CHAR_LABELS:
+        NOVEL_EDGE_TYPE_MAP[(_gun, _c)] = [
+            "TRANSFORMED_TO", "BECOMES", "EVOLVED_INTO", "CONSUMED_BY"
+        ]
+
+# Character to Event relations (restricted to semantically valid options)
 for _c in _CHAR_LABELS:
     for _ev in _EVENT_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_c, _ev)] = [
-            "PARTICIPATED_IN", "INVOLVED_IN", "WITNESSED", "KILLED", "SAVED", "DEFEATED", "LOVES", "HATES"
+            "PARTICIPATED_IN", "INVOLVED_IN", "WITNESSED", "LOVES", "HATES", "FEARS"
         ]
 
-# Event to Location relations
+# Event to Location relations (restricted to semantically valid options)
 for _ev in _EVENT_LABELS:
     for _loc in _LOC_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_ev, _loc)] = [
-            "LOCATED_AT", "LOCATED_IN", "HAPPENED_AT", "INSIDE"
+            "HAPPENED_AT", "LOCATED_IN"
         ]
 
-# Event to NarrativeElement relations
+# Event to NarrativeElement relations (restricted to semantically valid options)
 for _ev in _EVENT_LABELS:
     for _elem in _ELEMENT_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_ev, _elem)] = [
-            "HAS_ITEM", "OWNS", "INVOLVED_IN", "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN"
+            "INVOLVED_IN", "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN"
+        ]
+
+# Event to Belief relations
+for _ev in _EVENT_LABELS:
+    for _b in _BELIEF_LABELS:
+        NOVEL_EDGE_TYPE_MAP[(_ev, _b)] = [
+            "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN", "ALTERS"
+        ]
+
+# Event to ChekhovsGun relations (restricted to semantically valid options)
+for _ev in _EVENT_LABELS:
+    for _gun in _GUN_LABELS:
+        NOVEL_EDGE_TYPE_MAP[(_ev, _gun)] = [
+            "INVOLVED_IN", "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN", "ALTERS"
         ]
 
 # Event to Event relations
 for _ev1 in _EVENT_LABELS:
     for _ev2 in _EVENT_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_ev1, _ev2)] = [
-            "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN"
+            "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN", "ALTERS"
         ]
 
 # Event to Character relations
 for _ev in _EVENT_LABELS:
     for _c in _CHAR_LABELS:
         NOVEL_EDGE_TYPE_MAP[(_ev, _c)] = [
-            "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN"
+            "CAUSED", "TRIGGERS", "LEADS_TO", "RESULTED_IN", "ALTERS"
         ]
 
 # Event to Organization relations
@@ -339,42 +421,38 @@ for _loc1 in _LOC_LABELS:
 
 NOVEL_EXTRACTION_INSTRUCTIONS = """
 语言：与原文同语言（中文 → 全中文）。
-背景知识（勿建节点）：丧父、丧母、幼年、性格X、抚养、身世 等 → 只写入 MajorCharacter.background。
-身份/技能/称谓/物品/资源：外门弟子、基础剑法、长生剑、贡献点、灵石、长老（非专名）→ NarrativeElement，禁止裸 Entity 标签。
-具名人物/地名/门派：MajorCharacter / Location / Organization。
-怪物、妖兽、具名敌人（如 赤炼毒蛇）：MinorCharacter，禁止标为 NarrativeElement。
-Event 仅用于有明确主体的事件；「丧父」不是 Event。
-优先把「李默是外门弟子」写入李默的 current_status，而非单独「外门弟子」节点（除非需跨章追踪该称谓）。
-生命周期：NarrativeElement 随多段文本可提升为 MinorCharacter，再提升为 MajorCharacter（ingest 后自动评估）。
-所有字段可选；勿把 A 的背景写到 B。
+核心原则：仅在图谱中建模“戏剧冲突、信息差与核心因果链”相关的实体和关系。其余静态背景、大段景色、普通对话应从图谱剥离。
+
+实体提取规范：
+1. MajorCharacter / MinorCharacter / RelatedPerson：
+   - 必须记录角色的心理与状态流转（仅在发生变化或被明确提及该状态时更新，未变动或未提及则留空）：
+     * desire: 人物当下最迫切的欲望/主导动机。
+     * fear: 软肋/最深层的恐惧。
+     * emotional_state: 主导情绪，如：焦虑、愤怒、决绝、惊喜。
+     * physical_status: 身体/生命状态，如：中毒、健康、气海破碎。
+   - 勿创建关于角色的静态性格节点。性格特征 personality 和静态身世 background（如：生于江城、由母亲抚养长大）必须直接写入 MajorCharacter 的字段，绝不要建立成独立节点。
+2. Belief (信念/认知)：用于刻画人物脑中的认知 and 信息差。
+   - content: 必须是一个明确的客观陈述（如「李默是杀害王虎的凶手」，「咸菜盒子里藏有毒药」）。
+   - is_misconception: 若文中明确该认知为误解、谣言、虚假信息或谎言，则标为 True。
+3. ChekhovsGun (契诃夫之枪)：具有推动剧情发展、改变人物命运或引爆冲突的核心道具（如：伪造的信件、密室钥匙、致命毒药、长生剑）。
+   - nature: 道具戏剧本质说明（如：能自证清白的物证）。
+   - state: 道具当前的状态（如：已拆封、已损坏、下落不明）。
+4. DramaEvent (戏剧事件)：指改变人物关系、心理或推动因果走向的核心动作（如：李默出示伪造信、咸菜制造误会、王虎遭下毒）。
+5. Organization / Location / NarrativeElement:
+   - 仅建模对故事走向有直接戏剧性作用的组织、地点或基础叙事要素。
 
 关系提取与命名规则：
-1. 优先使用已定义的标准关系类型：
-   - 社交/同盟：BELONGS_TO, MEMBER_OF, MASTER_OF (师父/主子), DISCIPLE_OF (徒弟/下属), ENEMY_OF, ALLY_OF, FRIEND_OF, WORKED_AT, LEADER_OF
-   - 亲属血缘：PARENT_OF, CHILD_OF, SPOUSE_OF, SIBLING_OF, FATHER_OF, MOTHER_OF, WIFE_OF, HUSBAND_OF
-   - 情感态度：LOVES, HATES, FEARS, TRUSTS, RESPECTS, ADMIRES
-   - 行为动作：KILLED, SAVED, HELPED, ATTACKED, DEFEATED, BETRAYED, GAVE_ITEM_TO, STOLE_FROM, STUDIED, LEARNED, PARTICIPATED_IN, INVOLVED_IN, WITNESSED, SPENT, CONSUMED, CONSUMED_BY
-   - 因果逻辑：CAUSED, TRIGGERS, LEADS_TO, RESULTED_IN
-   - 状态转化：TRANSFORMED_TO, BECOMES, EVOLVED_INTO
-   - 物理/拥有：OWNS, HAS_ITEM, LOCATED_AT, LOCATED_IN, ABOVE, BELOW, INSIDE, HAPPENED_AT
-2. 动态关系命名：如果标准类型无法完全契合，LLM 可以自行发明合适的大写下划线关系（如 CHALLENGED_TO_DUEL）。
-3. 时空与细节属性：任何关系（如爱恨、动作、学过技能等），凡是伴随程度、职位或特定时空上下文的，必须在关系的 fact 字符串中写明（如「李默大乾历100年在江城击杀了赤炼毒蛇」，「李默极度怨恨张三」，「李默是天机阁的外门弟子」），以供系统自动提取属性。
-4. 时空与事件建模规范：
-   - 拥有物品或技能：必须将物品/技能抽取为独立的 NarrativeElement，并用 OWNS 或 HAS_ITEM 等关系连接（如：李默 ─[HAS_ITEM]─► 长生剑）。千万不要把物品当作地点或只写在边属性里。
-   - 资源消耗与获取：涉及虚拟资源的消耗或获取（如花费贡献点、获取灵石等），必须将该资源（如 贡献点、灵石）抽取为独立的 NarrativeElement 节点，并通过关系（如 SPENT, CONSUMED, OWNS, HAS_ITEM 等）进行连接，且在关系的 fact 属性中写明具体的变化和数量（如：「李默耗费了五百贡献点」）。
-   - 描述一个人正在干某事或干过某事：通过 `STUDIED` / `LEARNED` 等动作关系连至技能/事物（如：李默 ─[STUDIED]─► 长生诀）。
-   - 战斗击杀（必提，与武器/技能并列）：文中出现击杀/斩杀/杀死/击败/诛灭等，必须将受害者建为 MinorCharacter，并建立施害者 ─[KILLED 或 DEFEATED]─► 受害者（如：李默 ─[KILLED]─► 赤炼毒蛇）；不得只提取 HAS_ITEM / STUDIED 而漏掉击杀。
-   - 描述一个人在某个时间、某个地方做了某件复杂的动作/事件：实例化一个 `Event` 节点（如：李默江城杀蛇），让人物通过 `PARTICIPATED_IN` 或 `INVOLVED_IN` 连接到该 `Event` 节点，并让 `Event` 节点通过 `HAPPENED_AT` / `LOCATED_IN` 连接至 `Location` 节点，且在 `Event` 和边上描述时间点（如 `time_hint` 属性）。
-5. 因果与转化（时空流转）规范：
-   - 因果（情节）：通过 `Event` ─[CAUSED / TRIGGERS / LEADS_TO / RESULTED_IN]─► `Event` 建立情节逻辑链条（如：“李默杀死王虎”事件 ─[CAUSED]─► “王虎之子复仇”事件）。
-   - 转化（人物弧光与状态流转）：
-     - 身份与心态转化：人物 ─[TRANSFORMED_TO / BECOMES]─► 叙事要素（NarrativeElement）表示状态/称谓/身份演变（如：李默 ─[BECOMES]─► 恶龙）。
-     - 关系与情感转化：在不同时间点建立不同的关系边（如在 t1 建立 LOVES，在 t2 建立 HATES/ENEMY_OF），由 Graphiti 基于时间线（valid_at）进行多层关系演变分析。
-     - 事物/技能/组织转化：事物 ─[EVOLVED_INTO / TRANSFORMED_TO]─► 事物（如：“长生诀” ─[EVOLVED_INTO]─► “长生仙经”；“铁剑门” ─[TRANSFORMED_TO]─► “天剑宗”）。
-6. 规范实体命名与提示词引导（[canon-hints]）：
-   - 如果文本最后附带有 `[canon-hints]` 段落，提取时必须严格遵循其中指定的实体名称、标签和关系说明。
-   - 必须完全使用 `[canon-hints]` 中给出的实体名称（例如，若提示为「雷暴义眼」，提取的实体名称必须为「雷暴义眼」，绝不能提取为「军用级雷暴义眼」等其他变体；若提示为「苏默」，绝不能提取为「拾荒者苏默」）。
-   - 必须按照 `[canon-hints]` 中指示的关系逻辑进行提取，确保边关系和方向符合物理与逻辑常识（例如，应为：林德 ─[SPENT]─► 信用点，以及 林德 ─[HAS_ITEM/OWNS]─► 雷暴义眼，绝不能将关系反向或将雷暴义眼错当作 SPENT 的目标）。
+1. 信息差/认知链：
+   - 人物 ─[BELIEVES]─► Belief (例如：李默 ─[BELIEVES]─► 「咸菜里有毒」)。
+   - 人物 ─[CONCEALS_FROM]─► 人物 (例如：张三 ─[CONCEALS_FROM]─► 李默。在关系 fact 中写明隐瞒的具体内容或 Belief)。
+   - 人物 ─[KNOWS_SECRET_OF]─► 人物 (例如：李默 ─[KNOWS_SECRET_OF]─► 张三。在 fact 中写明知道什么秘密)。
+2. 情感/态度连线：
+   - 人物 ─[LOVES / HATES / FEARS / TRUSTS / SUSPECTS / ADMIRES / RESPECTS]─► 人物 / 道具 (如：李默 ─[SUSPECTS]─► 张三)。
+3. 因果/变化链：
+   - 事件/信念 ─[CAUSED / TRIGGERS / LEADS_TO / RESULTED_IN / ALTERS]─► 事件/信念/人物/道具 (例如：「李默杀王虎」事件 ─[TRIGGERS]─► 「王家复仇」事件；「识破谎言」事件 ─[ALTERS]─► 「李默 ─[BELIEVES]─► X」信念)。
+4. 拥有与物理：
+   - 人物 ─[OWNS / HAS_ITEM]─► 契诃夫之枪/物品。
+   - 实体 ─[LOCATED_AT / LOCATED_IN]─► 地点。
+5. 动态关系命名：如果标准类型无法完全契合，LLM 可以自行发明合适的大写下划线关系（如 CHALLENGED_TO_DUEL）。
+6. 时空与细节属性：任何关系（如爱恨、动作、学过技能等），凡是伴随程度、职位或特定时空上下文的，必须在关系的 fact 字符串中写明，以供系统自动提取属性。
 """.strip()
-
-

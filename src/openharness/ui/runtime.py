@@ -11,6 +11,7 @@ from typing import Any, Awaitable, Callable, Iterable
 from openharness.api.client import AnthropicApiClient, SupportsStreamingMessages
 from openharness.api.codex_client import CodexApiClient
 from openharness.api.copilot_client import CopilotClient
+from openharness.api.mlflow_tracing import describe_mlflow_agent_status, wrap_api_client_if_enabled
 from openharness.api.openai_client import OpenAICompatibleClient
 from openharness.api.provider import auth_status, detect_provider
 from openharness.bridge import get_bridge_manager
@@ -64,6 +65,7 @@ def _resolve_image_generation_config(settings) -> dict[str, str]:
         "base_url": cfg.base_url or env_cfg.base_url,
         "codex_model": cfg.codex_model or env_cfg.codex_model,
         "codex_base_url": cfg.codex_base_url or env_cfg.codex_base_url,
+        "comfyui_base_url": cfg.comfyui_base_url or env_cfg.comfyui_base_url,
     }
 
     try:
@@ -207,6 +209,7 @@ def _resolve_api_client_from_settings(settings) -> SupportsStreamingMessages:
             )
             raise SystemExit(1)
 
+    client: SupportsStreamingMessages
     if settings.api_format == "copilot":
         from openharness.api.copilot_client import COPILOT_DEFAULT_MODEL
 
@@ -215,32 +218,72 @@ def _resolve_api_client_from_settings(settings) -> SupportsStreamingMessages:
             if settings.model in {"claude-sonnet-4-20250514", "claude-sonnet-4-6", "sonnet", "default"}
             else settings.model
         )
-        return CopilotClient(model=copilot_model)
-    if settings.provider == "openai_codex":
+        client = CopilotClient(model=copilot_model)
+    elif settings.provider == "openai_codex":
         auth = _safe_resolve_auth()
-        return CodexApiClient(
+        client = CodexApiClient(
             auth_token=auth.value,
             base_url=settings.base_url,
         )
-    if settings.provider == "anthropic_claude":
-        return AnthropicApiClient(
+    elif settings.provider == "anthropic_claude":
+        client = AnthropicApiClient(
             auth_token=_safe_resolve_auth().value,
             base_url=settings.base_url,
             claude_oauth=True,
             auth_token_resolver=lambda: settings.resolve_auth().value,
         )
-    if settings.api_format in ("openai", "openai_compat"):
+    elif settings.api_format in ("openai", "openai_compat"):
         auth = _safe_resolve_auth()
-        return OpenAICompatibleClient(
+        client = OpenAICompatibleClient(
             api_key=auth.value,
             base_url=settings.base_url,
             timeout=settings.timeout,
         )
-    auth = _safe_resolve_auth()
-    return AnthropicApiClient(
-        api_key=auth.value,
-        base_url=settings.base_url,
+    else:
+        auth = _safe_resolve_auth()
+        client = AnthropicApiClient(
+            api_key=auth.value,
+            base_url=settings.base_url,
+        )
+    return wrap_api_client_if_enabled(client)
+
+
+import logging as _logging
+
+_log = _logging.getLogger(__name__)
+
+
+def _maybe_bind_openmontage_session(plugins: list, cwd: str) -> "object | None":
+    """Create and bind a BridgeHookSession if the openmontage plugin is enabled.
+
+    Returns the session so callers can store it in tool_metadata.  Returns
+    None when the plugin is absent, disabled, or the bridge is unavailable.
+
+    The session is bound via ``contextvars.ContextVar.set`` which means it is
+    visible to all subsequent awaits and ``asyncio.to_thread`` calls in the
+    same asyncio task — exactly the scope of one OpenHarness session turn.
+    """
+    om_plugin = next(
+        (p for p in plugins if p.manifest.name == "openmontage" and p.enabled),
+        None,
     )
+    if om_plugin is None:
+        return None
+    try:
+        from openharness.openmontage.bridge.hooks import (
+            BridgeHookSession,
+            bind_session,
+            install_default_hooks,
+        )
+
+        session = BridgeHookSession.for_pipeline(None, root=Path(cwd))
+        install_default_hooks(session)
+        bind_session(session)
+        _log.debug("OpenMontage bridge session bound: run_id=%s", session.run_id)
+        return session
+    except Exception:
+        _log.debug("Failed to bind OpenMontage bridge session", exc_info=True)
+        return None
 
 
 async def build_runtime(
@@ -299,6 +342,13 @@ async def build_runtime(
         if plugin.enabled and plugin.tools:
             for tool in plugin.tools:
                 tool_registry.register(tool)
+
+    # Bind an OpenMontage bridge session when the openmontage plugin is active.
+    # This ensures trace/checkpoint/cost hooks fire for every om_* tool call
+    # regardless of whether the user entered via `oh montage agent` or via a
+    # normal TUI / print-mode session that runs a /montage_* slash command.
+    _om_session = _maybe_bind_openmontage_session(plugins, cwd)
+
     provider = detect_provider(settings)
     bridge_manager = get_bridge_manager()
     app_state = AppStateStore(
@@ -323,6 +373,7 @@ async def build_runtime(
             mcp_failed=sum(1 for status in mcp_manager.list_statuses() if status.state == "failed"),
             bridge_sessions=len(bridge_manager.list_sessions()),
             output_style=settings.output_style,
+            mlflow_status=describe_mlflow_agent_status(),
             keybindings=load_keybindings(),
         )
     )
@@ -342,6 +393,7 @@ async def build_runtime(
         latest_user_prompt=prompt,
         extra_skill_dirs=normalized_skill_dirs,
         extra_plugin_roots=normalized_plugin_roots,
+        plugins=plugins,
         include_project_memory=include_project_memory,
     )
     from uuid import uuid4
@@ -396,6 +448,7 @@ async def build_runtime(
             "edit_approval_prompt": edit_approval_prompt,
             "vision_model_config": _resolve_vision_config(settings),
             "image_generation_config": _resolve_image_generation_config(settings),
+            "openmontage_session": _om_session,
             **restored_metadata,
         },
     )
@@ -558,6 +611,7 @@ def sync_app_state(bundle: RuntimeBundle) -> None:
         mcp_failed=sum(1 for status in bundle.mcp_manager.list_statuses() if status.state == "failed"),
         bridge_sessions=len(get_bridge_manager().list_sessions()),
         output_style=settings.output_style,
+        mlflow_status=describe_mlflow_agent_status(),
         keybindings=load_keybindings(),
     )
 

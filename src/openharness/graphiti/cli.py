@@ -26,13 +26,75 @@ def graphiti_ingest(
         help="changed_paragraphs | chapter_all",
     ),
     write_uids: bool = typer.Option(True, "--write-uids/--no-write-uids"),
+    approved: bool = typer.Option(False, "--approved", help="Approve ingestion of the staged summaries"),
+    direct: bool = typer.Option(False, "--direct", help="Bypass the summary buffer and ingest directly"),
 ) -> None:
     """Run ingest_submitted_document after human approve."""
     from openharness.graphiti.client import GraphitiClient
     from openharness.graphiti.config import GraphitiSettings
     from openharness.graphiti.ingest import ingest_submitted_document
+    from openharness.graphiti.observability import (
+        log_artifacts,
+        log_metrics,
+        log_params,
+        start_graphiti_run,
+    )
+    from openharness.graphiti.paragraphs import split_paragraphs
+    from openharness.graphiti.summary_stage import parse_summary_file
 
     gid = group_id or GraphitiSettings.from_env().group_id
+
+    summaries_map = None
+    if not direct:
+        summary_path = source.resolve().with_suffix(".summary.md")
+        if not summary_path.exists():
+            typer.echo(
+                f"Error: Summary buffer file not found at {summary_path}.\n"
+                f"Please run the stage-summary command first:\n"
+                f"  uv run openharness graphiti stage-summary --studio-root {studio_root} --source {source}",
+                err=True,
+            )
+            sys.exit(1)
+
+        try:
+            summary_content = summary_path.read_text(encoding="utf-8")
+            parsed_summaries = parse_summary_file(summary_content)
+        except Exception as e:
+            typer.echo(f"Error: Failed to parse summary buffer file: {e}", err=True)
+            sys.exit(1)
+
+        try:
+            source_content = source.read_text(encoding="utf-8")
+            source_blocks = split_paragraphs(source_content)
+        except Exception as e:
+            typer.echo(f"Error: Failed to read/parse source file: {e}", err=True)
+            sys.exit(1)
+
+        mismatched = []
+        for block in source_blocks:
+            existing = parsed_summaries.get(block.paragraph_uid)
+            if not existing or existing[0] != block.content_hash:
+                mismatched.append(block.paragraph_uid)
+
+        if mismatched:
+            typer.echo(
+                f"Error: Summary buffer is out of date. The following paragraph UIDs are missing or have mismatched hashes: {mismatched}.\n"
+                f"Please run stage-summary first to update the summary buffer:\n"
+                f"  uv run openharness graphiti stage-summary --studio-root {studio_root} --source {source}",
+                err=True,
+            )
+            sys.exit(1)
+
+        if not approved:
+            typer.echo(
+                f"Summary buffer file found and validated at {summary_path}.\n"
+                f"Please review it, make sure the summaries are correct, and run the ingest command with the --approved flag:\n"
+                f"  uv run openharness graphiti ingest --studio-root {studio_root} --source {source} --gate {gate} --kind {kind} --approved",
+                err=True,
+            )
+            sys.exit(1)
+
+        summaries_map = {uid: text for uid, (_, text) in parsed_summaries.items()}
 
     async def _run() -> dict[str, object]:
         client = GraphitiClient(GraphitiSettings.from_env(group_id=gid))
@@ -45,6 +107,7 @@ def graphiti_ingest(
             studio_root=studio_root.resolve(),
             graphiti=client,
             write_uids_to_markdown=write_uids,
+            summaries_map=summaries_map,
         )
         await client.close()
         return {
@@ -57,7 +120,87 @@ def graphiti_ingest(
             "submit_run_id": report.submit_run_id,
         }
 
-    typer.echo(json.dumps(asyncio.run(_run()), ensure_ascii=False, indent=2))
+    with start_graphiti_run(
+        run_name="graphiti_ingest",
+        tags={"pipeline": "ingest", "group_id": gid},
+    ) as run:
+        log_params(
+            run,
+            {
+                "gate": gate,
+                "kind": kind,
+                "scope": scope,
+                "direct": direct,
+                "approved": approved,
+                "source": str(source.resolve()),
+            },
+        )
+        result = asyncio.run(_run())
+        log_metrics(
+            run,
+            {
+                "paragraphs_ingested": int(result["paragraphs_ingested"]),
+                "paragraphs_skipped": int(result["paragraphs_skipped"]),
+                "paragraphs_superseded": int(result["paragraphs_superseded"]),
+                "entities_promoted": int(result["entities_promoted"]),
+            },
+        )
+        log_artifacts(run, [source.resolve(), source.resolve().with_suffix(".summary.md")])
+
+    typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+@graphiti_app.command("stage-summary")
+def graphiti_stage_summary(
+    studio_root: Path = typer.Option(..., "--studio-root", help="Path to studio/ directory"),
+    source: Path = typer.Option(..., "--source", help="Chapter markdown file"),
+) -> None:
+    """Generate or update the intermediate summary buffer file."""
+    from openharness.graphiti.summary_stage import stage_chapter_summaries
+    from openharness.graphiti.observability import (
+        log_artifacts,
+        log_metrics,
+        log_params,
+        start_graphiti_run,
+    )
+
+    async def _run() -> dict[str, object]:
+        summary_path, stats = await stage_chapter_summaries(
+            source_path=source.resolve(),
+            studio_root=studio_root.resolve(),
+        )
+        return {
+            "summary_path": str(summary_path),
+            "stats": stats,
+        }
+
+    try:
+        with start_graphiti_run(
+            run_name="graphiti_stage_summary",
+            tags={"pipeline": "stage_summary"},
+        ) as run:
+            log_params(
+                run,
+                {
+                    "source": str(source.resolve()),
+                    "studio_root": str(studio_root.resolve()),
+                },
+            )
+            res = asyncio.run(_run())
+            stats = res["stats"]
+            log_metrics(
+                run,
+                {
+                    "summaries_reused": int(stats["reused"]),
+                    "summaries_updated": int(stats["updated"]),
+                    "summaries_created": int(stats["created"]),
+                },
+            )
+            log_artifacts(run, [source.resolve(), Path(str(res["summary_path"]))])
+        typer.echo(json.dumps(res, ensure_ascii=False, indent=2))
+    except Exception as e:
+        typer.echo(f"Error: {e}", err=True)
+        sys.exit(1)
 
 
 @graphiti_app.command("check-conflicts")

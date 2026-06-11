@@ -64,7 +64,7 @@ async def test_plugin_install_load_and_uninstall_flow(tmp_path: Path, monkeypatc
     assert installed_path.exists()
 
     settings = Settings()
-    plugins = load_plugins(settings, project)
+    plugins = load_plugins(settings, project, include_bundled=False)
     assert len(plugins) == 1
     assert plugins[0].manifest.name == "fixture-plugin"
     assert plugins[0].skills[0].name == "FixtureSkill"
@@ -91,7 +91,7 @@ async def test_plugin_install_load_and_uninstall_flow(tmp_path: Path, monkeypatc
         await manager.close()
 
     assert uninstall_plugin("fixture-plugin") is True
-    assert load_plugins(load_settings(), project) == []
+    assert load_plugins(load_settings(), project, include_bundled=False) == []
 
 
 def test_uninstall_plugin_rejects_traversal_name_without_deleting_sibling(

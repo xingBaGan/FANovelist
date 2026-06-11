@@ -27,4 +27,5 @@ class AppState:
     mcp_failed: int = 0
     bridge_sessions: int = 0
     output_style: str = "default"
+    mlflow_status: str = "off"
     keybindings: dict[str, str] = field(default_factory=dict)

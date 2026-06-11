@@ -483,26 +483,45 @@ class ImageGenerationConfig(BaseModel):
     base_url: str = ""
     codex_model: str = "gpt-5.4"
     codex_base_url: str = ""
+    comfyui_base_url: str = ""
 
     @classmethod
     def from_env(cls) -> "ImageGenerationConfig":
         """Load image generation config from environment variables."""
+        base_url = os.environ.get("OPENHARNESS_IMAGE_GENERATION_BASE_URL", "").strip()
+        api_key = os.environ.get("OPENHARNESS_IMAGE_GENERATION_API_KEY", "").strip()
+        model = os.environ.get("OPENHARNESS_IMAGE_GENERATION_MODEL", "").strip()
+        comfyui_base_url = (
+            os.environ.get("COMFYUI_BACKEND_URL", "").strip()
+            or os.environ.get("COMFYUI_URL", "").strip()
+        )
+
+        # Fallback to SILICONFLOW if SILICONFLOW_API_KEY is defined
+        silicon_key = os.environ.get("SILICONFLOW_API_KEY", "").strip()
+        if silicon_key and not api_key:
+            api_key = silicon_key
+            if not base_url:
+                base_url = "https://api.siliconflow.cn/v1"
+
+        if not model:
+            model = "gpt-image-2"
+
         return cls(
             provider=os.environ.get("OPENHARNESS_IMAGE_GENERATION_PROVIDER", "auto").strip()
             or "auto",
-            model=os.environ.get("OPENHARNESS_IMAGE_GENERATION_MODEL", "gpt-image-2").strip()
-            or "gpt-image-2",
-            api_key=os.environ.get("OPENHARNESS_IMAGE_GENERATION_API_KEY", "").strip(),
-            base_url=os.environ.get("OPENHARNESS_IMAGE_GENERATION_BASE_URL", "").strip(),
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
             codex_model=os.environ.get("OPENHARNESS_IMAGE_GENERATION_CODEX_MODEL", "gpt-5.4").strip()
             or "gpt-5.4",
             codex_base_url=os.environ.get("OPENHARNESS_IMAGE_GENERATION_CODEX_BASE_URL", "").strip(),
+            comfyui_base_url=comfyui_base_url,
         )
 
     @property
     def is_configured(self) -> bool:
-        """Return True when either a key provider or Codex provider is selected."""
-        return bool(self.api_key or self.provider in {"auto", "codex"})
+        """Return True when either a key provider, Codex provider, or ComfyUI provider is selected."""
+        return bool(self.api_key or self.provider in {"auto", "codex", "comfyui"} or self.comfyui_base_url)
 
 
 class VisionModelConfig(BaseModel):
@@ -959,9 +978,49 @@ def _apply_env_overrides(settings: Settings) -> Settings:
     if sandbox_updates:
         updates["sandbox"] = settings.sandbox.model_copy(update=sandbox_updates)
 
+    # --- image_generation ---
+    image_gen_model = os.environ.get("OPENHARNESS_IMAGE_GENERATION_MODEL")
+    image_gen_base = os.environ.get("OPENHARNESS_IMAGE_GENERATION_BASE_URL")
+    image_gen_key = os.environ.get("OPENHARNESS_IMAGE_GENERATION_API_KEY")
+    image_gen_provider = os.environ.get("OPENHARNESS_IMAGE_GENERATION_PROVIDER")
+    image_gen_codex_model = os.environ.get("OPENHARNESS_IMAGE_GENERATION_CODEX_MODEL")
+    image_gen_codex_base = os.environ.get("OPENHARNESS_IMAGE_GENERATION_CODEX_BASE_URL")
+    image_gen_comfyui_base = (
+        os.environ.get("COMFYUI_BACKEND_URL")
+        or os.environ.get("COMFYUI_URL")
+    )
+
+    # Fallback to SILICONFLOW if SILICONFLOW_API_KEY is defined
+    if not image_gen_key:
+        silicon_key = os.environ.get("SILICONFLOW_API_KEY", "").strip()
+        if silicon_key:
+            image_gen_key = silicon_key
+            if not image_gen_base:
+                image_gen_base = "https://api.siliconflow.cn/v1"
+
+    image_gen_updates: dict[str, Any] = {}
+    if image_gen_model is not None:
+        image_gen_updates["model"] = image_gen_model.strip()
+    if image_gen_base is not None:
+        image_gen_updates["base_url"] = image_gen_base.strip()
+    if image_gen_key is not None:
+        image_gen_updates["api_key"] = image_gen_key.strip()
+    if image_gen_provider is not None:
+        image_gen_updates["provider"] = image_gen_provider.strip()
+    if image_gen_codex_model is not None:
+        image_gen_updates["codex_model"] = image_gen_codex_model.strip()
+    if image_gen_codex_base is not None:
+        image_gen_updates["codex_base_url"] = image_gen_codex_base.strip()
+    if image_gen_comfyui_base is not None:
+        image_gen_updates["comfyui_base_url"] = image_gen_comfyui_base.strip()
+
+    if image_gen_updates:
+        updates["image_generation"] = settings.image_generation.model_copy(update=image_gen_updates)
+
     if not updates:
         return settings
     return settings.model_copy(update=updates)
+
 
 
 def _parse_bool_env(value: str) -> bool:

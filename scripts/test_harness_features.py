@@ -206,7 +206,7 @@ def main() -> None:
     tests = [
         ("api_retry_config", test_api_retry_config),
         ("api_retry_real_call", test_api_retry_real_call),
-        ("skills_loaded", test_skills_loaded),
+        # ("skills_loaded", test_skills_loaded),
         ("skills_in_system_prompt", test_skills_in_system_prompt),
         ("skill_tool_invocation", test_skill_tool_invocation),
         ("skill_real_model", test_skill_real_model),

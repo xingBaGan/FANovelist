@@ -28,7 +28,16 @@ uv run openharness graphiti check-conflicts \
 Or use tool `check_canon_conflicts` with the draft path. **Do not copy or ingest while `blocked: true`.**
 
 3. Copy `studio/characters/$ARGUMENTS.draft.md` → `studio/characters/$ARGUMENTS.md`.
-4. Ingest canon graph (from novel project root, with `my-novel/.env` loaded):
+4. Stage the paragraph summaries for human review:
+
+```bash
+set -a && source .env && set +a
+uv run openharness graphiti stage-summary \
+  --studio-root studio \
+  --source studio/characters/$ARGUMENTS.md
+```
+
+5. Ask the human to review the generated summary buffer file at `studio/characters/$ARGUMENTS.summary.md`. Once the human approves, ingest the approved summaries into the canon graph:
 
 ```bash
 set -a && source .env && set +a
@@ -37,9 +46,10 @@ uv run openharness graphiti ingest \
   --source studio/characters/$ARGUMENTS.md \
   --gate approve-character \
   --kind character_card \
-  --group-id "${GRAPHITI_GROUP_ID:-my-novel}"
+  --group-id "${GRAPHITI_GROUP_ID:-my-novel}" \
+  --approved
 ```
 
-5. Write marker file `studio/.approved-character-$ARGUMENTS` with ISO date.
+6. Write marker file `studio/.approved-character-$ARGUMENTS` with ISO date.
 
 Confirm final path and ingest results (paragraphs ingested, entities promoted) to the human.

@@ -39,7 +39,7 @@ def test_project_plugin_mcp_not_loaded_by_default(tmp_path: Path, monkeypatch) -
     _write_stdio_plugin(plugins_root)
 
     settings = Settings()
-    plugins = load_plugins(settings, project)
+    plugins = load_plugins(settings, project, include_bundled=False)
     servers = load_mcp_server_configs(settings, plugins)
 
     assert plugins == []
@@ -54,7 +54,7 @@ def test_project_plugin_mcp_requires_explicit_opt_in(tmp_path: Path, monkeypatch
     _write_stdio_plugin(plugins_root)
 
     settings = Settings(allow_project_plugins=True)
-    plugins = load_plugins(settings, project)
+    plugins = load_plugins(settings, project, include_bundled=False)
     servers = load_mcp_server_configs(settings, plugins)
 
     assert len(plugins) == 1

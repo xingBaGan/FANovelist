@@ -21,3 +21,22 @@ def test_major_character_consolidated_background() -> None:
 def test_minor_character_has_no_background_field() -> None:
     assert "background" not in MinorCharacter.model_fields
     assert "scene_note" in MinorCharacter.model_fields
+
+
+def test_new_drama_entities() -> None:
+    from openharness.graphiti.ontology import Belief, ChekhovsGun, DramaEvent
+
+    # Test Belief
+    b = Belief(content="李默是凶手", is_misconception=True)
+    assert b.content == "李默是凶手"
+    assert b.is_misconception is True
+
+    # Test ChekhovsGun
+    g = ChekhovsGun(nature="自证清白的信件", state="已损坏")
+    assert g.nature == "自证清白的信件"
+    assert g.state == "已损坏"
+
+    # Test DramaEvent
+    e = DramaEvent(description="出示伪造信件", consequence="引起恐慌")
+    assert e.description == "出示伪造信件"
+    assert e.consequence == "引起恐慌"
